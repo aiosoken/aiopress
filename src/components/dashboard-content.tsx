@@ -1,168 +1,108 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import {
   FolderOpen,
   Palette,
   Sparkles,
-  TrendingUp,
   Upload,
   FileText,
-  ImageIcon,
-  MoreHorizontal,
-  Eye,
-  Download,
-  Trash2,
+  FileImage,
   Building2,
   Plus,
   ArrowRight,
+  Twitter,
+  Wand2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuthContext, useBrandsContext } from "@/components/providers";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import type { CreativeType } from "@/types";
 
-// このデータは後で実際のデータと統合します
-const stats = [
-  {
-    title: "ブランド数",
-    value: "0",
-    change: "",
-    icon: Building2,
-    color: "bg-blue-500/10 text-blue-600",
-  },
-  {
-    title: "資産数",
-    value: "0",
-    change: "",
-    icon: FolderOpen,
-    color: "bg-emerald-500/10 text-emerald-600",
-  },
-  {
-    title: "クリエイティブ",
-    value: "0",
-    change: "",
-    icon: Sparkles,
-    color: "bg-amber-500/10 text-amber-600",
-  },
-  {
-    title: "デザインシステム",
-    value: "0%",
-    change: "",
-    icon: Palette,
-    color: "bg-primary/10 text-primary",
-  },
-];
+function getTypeIcon(type: CreativeType) {
+  switch (type) {
+    case "CATCH_COPY":
+      return <Sparkles className="h-4 w-4 text-primary" />;
+    case "SNS_POST":
+      return <Twitter className="h-4 w-4 text-primary" />;
+    case "ARTICLE":
+      return <FileText className="h-4 w-4 text-primary" />;
+    case "IMAGE":
+      return <Wand2 className="h-4 w-4 text-primary" />;
+    default:
+      return <Wand2 className="h-4 w-4 text-primary" />;
+  }
+}
 
-const recentAssets = [
-  {
-    id: 1,
-    name: "ブランドガイドライン2025.pdf",
-    type: "PDF",
-    size: "2.4 MB",
-    date: "2時間前",
-    status: "分析完了",
-    icon: FileText,
-  },
-  {
-    id: 2,
-    name: "ロゴ_横型_カラー.png",
-    type: "PNG",
-    size: "845 KB",
-    date: "5時間前",
-    status: "分析完了",
-    icon: ImageIcon,
-  },
-  {
-    id: 3,
-    name: "プレスリリース_新製品.docx",
-    type: "DOCX",
-    size: "1.2 MB",
-    date: "1日前",
-    status: "分析中",
-    icon: FileText,
-  },
-  {
-    id: 4,
-    name: "SNSバナー_キャンペーン.jpg",
-    type: "JPG",
-    size: "1.8 MB",
-    date: "2日前",
-    status: "分析完了",
-    icon: ImageIcon,
-  },
-];
+function getTypeLabel(type: CreativeType) {
+  switch (type) {
+    case "CATCH_COPY":
+      return "キャッチコピー";
+    case "SNS_POST":
+      return "SNS投稿";
+    case "ARTICLE":
+      return "記事";
+    case "IMAGE":
+      return "画像";
+    default:
+      return type;
+  }
+}
 
-const designSystemProgress = [
-  { name: "カラーパレット", progress: 100 },
-  { name: "タイポグラフィ", progress: 100 },
-  { name: "トーン&マナー", progress: 85 },
-  { name: "キーワード", progress: 72 },
-  { name: "ターゲット分析", progress: 60 },
-];
+function formatRelativeTime(timestamp: { toMillis?: () => number } | undefined): string {
+  if (!timestamp || !timestamp.toMillis) return "";
+  
+  const now = Date.now();
+  const diff = now - timestamp.toMillis();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
 
-const recentCreatives = [
-  {
-    id: 1,
-    title: "新製品発表キャッチコピー",
-    type: "テキスト",
-    date: "1時間前",
-  },
-  {
-    id: 2,
-    title: "Instagram投稿用画像",
-    type: "画像",
-    date: "3時間前",
-  },
-  {
-    id: 3,
-    title: "メールマガジン本文",
-    type: "テキスト",
-    date: "6時間前",
-  },
-];
+  if (minutes < 60) return `${minutes}分前`;
+  if (hours < 24) return `${hours}時間前`;
+  return `${days}日前`;
+}
 
 export function DashboardContent() {
   const { firebaseUser } = useAuthContext();
   const { brands, loading: brandsLoading } = useBrandsContext();
 
-  const updatedStats = [
-    {
-      title: "ブランド数",
-      value: brandsLoading ? "-" : brands.length.toString(),
-      change: "",
-      icon: Building2,
-      color: "bg-blue-500/10 text-blue-600",
-    },
-    {
-      title: "資産数",
-      value: "0",
-      change: "",
-      icon: FolderOpen,
-      color: "bg-emerald-500/10 text-emerald-600",
-    },
-    {
-      title: "クリエイティブ",
-      value: "0",
-      change: "",
-      icon: Sparkles,
-      color: "bg-amber-500/10 text-amber-600",
-    },
-    {
-      title: "デザインシステム",
-      value: "0%",
-      change: "",
-      icon: Palette,
-      color: "bg-primary/10 text-primary",
-    },
-  ];
+  const brandIds = useMemo(() => brands.map((b) => b.id), [brands]);
+  const { stats, loading: statsLoading } = useDashboardStats(brandIds);
+
+  const updatedStats = useMemo(
+    () => [
+      {
+        title: "ブランド数",
+        value: brandsLoading ? "-" : brands.length.toString(),
+        icon: Building2,
+        color: "bg-blue-500/10 text-blue-600",
+      },
+      {
+        title: "資産数",
+        value: statsLoading ? "-" : stats.totalAssets.toString(),
+        icon: FolderOpen,
+        color: "bg-emerald-500/10 text-emerald-600",
+      },
+      {
+        title: "クリエイティブ",
+        value: statsLoading ? "-" : stats.totalCreatives.toString(),
+        icon: Sparkles,
+        color: "bg-amber-500/10 text-amber-600",
+      },
+      {
+        title: "デザインシステム",
+        value: statsLoading ? "-" : `${stats.designSystemProgress}%`,
+        icon: Palette,
+        color: "bg-primary/10 text-primary",
+      },
+    ],
+    [brandsLoading, brands.length, statsLoading, stats]
+  );
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
@@ -191,9 +131,6 @@ export function DashboardContent() {
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                   <p className="text-2xl font-semibold text-foreground mt-1">{stat.value}</p>
-                  {stat.change && (
-                    <p className="text-xs text-emerald-600 mt-1">{stat.change}</p>
-                  )}
                 </div>
                 <div className={`p-2.5 rounded-lg ${stat.color}`}>
                   <stat.icon className="h-5 w-5" />
@@ -268,15 +205,36 @@ export function DashboardContent() {
             <CardTitle className="text-base font-medium">デザインシステム進捗</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {designSystemProgress.map((item) => (
-              <div key={item.name} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{item.name}</span>
-                  <span className="font-medium text-foreground">{item.progress}%</span>
-                </div>
-                <Progress value={item.progress} className="h-2" />
+            {statsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
-            ))}
+            ) : brands.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground">
+                  ブランドを作成してデザインシステムを設定しましょう
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">全体の進捗</span>
+                    <span className="font-medium text-foreground">{stats.designSystemProgress}%</span>
+                  </div>
+                  <Progress value={stats.designSystemProgress} className="h-2" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  デザインシステムを設定すると、AIがより適切なクリエイティブを生成できます
+                </p>
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link href="/design-system">
+                    <Palette className="mr-2 h-4 w-4" />
+                    デザインシステムを編集
+                  </Link>
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -327,7 +285,11 @@ export function DashboardContent() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {recentCreatives.length === 0 ? (
+            {statsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : stats.recentCreatives.length === 0 ? (
               <div className="text-center py-8">
                 <Sparkles className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <p className="mt-4 text-sm text-muted-foreground">
@@ -341,22 +303,26 @@ export function DashboardContent() {
                 </Button>
               </div>
             ) : (
-              recentCreatives.map((creative) => (
+              stats.recentCreatives.map((creative) => (
                 <div
                   key={creative.id}
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                      <Sparkles className="h-4 w-4 text-primary" />
+                      {getTypeIcon(creative.type)}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{creative.title}</p>
-                      <p className="text-xs text-muted-foreground">{creative.date}</p>
+                      <p className="text-sm font-medium text-foreground line-clamp-1">
+                        {creative.prompt || getTypeLabel(creative.type)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatRelativeTime(creative.createdAt)}
+                      </p>
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {creative.type}
+                    {getTypeLabel(creative.type)}
                   </Badge>
                 </div>
               ))
