@@ -28,35 +28,79 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthChange(async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const user = await getCurrentUser();
-          setState({
-            user,
-            firebaseUser,
-            loading: false,
-            error: null,
-          });
-        } catch (error) {
-          setState({
-            user: null,
-            firebaseUser,
-            loading: false,
-            error: "Failed to load user data",
-          });
-        }
-      } else {
-        setState({
-          user: null,
-          firebaseUser: null,
-          loading: false,
-          error: null,
+    let mounted = true;
+    let unsubscribe: (() => void) | null = null;
+    
+    // Firebase初期化を待つ
+    const initAuth = () => {
+      try {
+        unsubscribe = onAuthChange(async (firebaseUser) => {
+          if (!mounted) return;
+          
+          if (firebaseUser) {
+            try {
+              const user = await getCurrentUser();
+              if (mounted) {
+                setState({
+                  user,
+                  firebaseUser,
+                  loading: false,
+                  error: null,
+                });
+              }
+            } catch (error) {
+              if (mounted) {
+                setState({
+                  user: null,
+                  firebaseUser,
+                  loading: false,
+                  error: "Failed to load user data",
+                });
+              }
+            }
+          } else {
+            if (mounted) {
+              setState({
+                user: null,
+                firebaseUser: null,
+                loading: false,
+                error: null,
+              });
+            }
+          }
         });
+      } catch (error) {
+        if (mounted) {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            error: "Firebase initialization failed",
+          }));
+        }
       }
-    });
+    };
 
-    return () => unsubscribe();
+    // クライアント側でのみ実行
+    if (typeof window !== "undefined") {
+      // 少し遅延させてFirebase初期化を待つ
+      const timer = setTimeout(() => {
+        initAuth();
+      }, 100);
+
+      return () => {
+        mounted = false;
+        clearTimeout(timer);
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      };
+    } else {
+      // サーバー側では即座にloadingをfalseに
+      setState((prev) => ({ ...prev, loading: false }));
+      return () => {
+        mounted = false;
+      };
+    }
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -78,6 +122,8 @@ export function useAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         await signUpWithEmail(email, password, displayName);
+        // onAuthChangeが呼ばれる前にloadingをfalseにしておく
+        setState((prev) => ({ ...prev, loading: false }));
       } catch (error) {
         setState((prev) => ({
           ...prev,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, use } from "react";
+import { useEffect, use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBrands } from "@/hooks/useBrands";
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   Building2,
   FolderOpen,
@@ -22,7 +23,13 @@ import {
   ArrowLeft,
   Upload,
   Settings,
+  Copy,
+  Sparkles,
+  Twitter,
+  FileText,
 } from "lucide-react";
+import { getBrandCreatives } from "@/lib/firebase/firestore";
+import type { Creative, CreativeType } from "@/types";
 
 interface BrandDetailPageProps {
   params: Promise<{ brandId: string }>;
@@ -270,40 +277,150 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
         </TabsContent>
 
         <TabsContent value="creatives">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>クリエイティブ</CardTitle>
-                  <CardDescription>
-                    AIが生成したクリエイティブを管理します
-                  </CardDescription>
-                </div>
-                <Button asChild>
-                  <Link href={`/creatives?brandId=${brandId}`}>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    新規生成
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Wand2 className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-4 text-sm text-muted-foreground">
-                  まだクリエイティブが生成されていません
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href={`/creatives?brandId=${brandId}`}>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    最初のクリエイティブを生成
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CreativesTab brandId={brandId} />
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function CreativesTab({ brandId }: { brandId: string }) {
+  const [creatives, setCreatives] = useState<Creative[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadCreatives();
+  }, [brandId]);
+
+  const loadCreatives = async () => {
+    setLoading(true);
+    try {
+      const fetchedCreatives = await getBrandCreatives(brandId);
+      setCreatives(fetchedCreatives);
+    } catch (error) {
+      console.error("Failed to fetch creatives:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTypeIcon = (type: CreativeType) => {
+    switch (type) {
+      case "CATCH_COPY":
+        return <Sparkles className="h-4 w-4" />;
+      case "SNS_POST":
+        return <Twitter className="h-4 w-4" />;
+      case "ARTICLE":
+        return <FileText className="h-4 w-4" />;
+      case "IMAGE":
+        return <Wand2 className="h-4 w-4" />;
+      default:
+        return <Wand2 className="h-4 w-4" />;
+    }
+  };
+
+  const getTypeLabel = (type: CreativeType) => {
+    switch (type) {
+      case "CATCH_COPY":
+        return "キャッチコピー";
+      case "SNS_POST":
+        return "SNS投稿";
+      case "ARTICLE":
+        return "記事";
+      case "IMAGE":
+        return "画像";
+      default:
+        return type;
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>クリエイティブ</CardTitle>
+            <CardDescription>
+              AIが生成したクリエイティブを管理します
+            </CardDescription>
+          </div>
+          <Button asChild>
+            <Link href={`/creatives?brandId=${brandId}`}>
+              <Wand2 className="mr-2 h-4 w-4" />
+              新規生成
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : creatives.length === 0 ? (
+          <div className="text-center py-8">
+            <Wand2 className="mx-auto h-12 w-12 text-muted-foreground/50" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              まだクリエイティブが生成されていません
+            </p>
+            <Button className="mt-4" asChild>
+              <Link href={`/creatives?brandId=${brandId}`}>
+                <Wand2 className="mr-2 h-4 w-4" />
+                最初のクリエイティブを生成
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {creatives.slice(0, 5).map((creative) => (
+              <div
+                key={creative.id}
+                className="rounded-lg border p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getTypeIcon(creative.type)}
+                    <Badge variant="secondary">
+                      {getTypeLabel(creative.type)}
+                    </Badge>
+                    {creative.metadata?.brandFitScore && (
+                      <Badge variant="outline">
+                        適合度: {creative.metadata.brandFitScore}%
+                      </Badge>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(creative.content)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <pre className="whitespace-pre-wrap text-sm bg-muted p-3 rounded">
+                  {creative.content}
+                </pre>
+                {creative.prompt && (
+                  <p className="text-xs text-muted-foreground">
+                    プロンプト: {creative.prompt}
+                  </p>
+                )}
+              </div>
+            ))}
+            {creatives.length > 5 && (
+              <Button variant="outline" className="w-full" asChild>
+                <Link href={`/creatives?brandId=${brandId}`}>
+                  すべてのクリエイティブを見る ({creatives.length}件)
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
