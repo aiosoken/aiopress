@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from "react";
 import {
   getUserBrands,
-  getBrand,
   createBrand,
   updateBrand,
   deleteBrand,
@@ -42,17 +41,11 @@ export function useBrands() {
   }, []);
 
   const selectBrand = useCallback(async (brandId: string) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const brand = await getBrand(brandId);
-      setState((prev) => ({ ...prev, currentBrand: brand, loading: false }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to fetch brand",
-      }));
-    }
+    // 既にローカルにあるブランドを使用（Firestoreへのアクセス不要）
+    setState((prev) => {
+      const brand = prev.brands.find((b) => b.id === brandId) || null;
+      return { ...prev, currentBrand: brand };
+    });
   }, []);
 
   const addBrand = useCallback(
@@ -63,7 +56,20 @@ export function useBrands() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         const brandId = await createBrand(name, userId, description);
-        await fetchBrands(userId);
+        // 楽観的更新: 新しいブランドをローカルに追加
+        const newBrand: Brand = {
+          id: brandId,
+          name,
+          description: description || "",
+          ownerId: userId,
+          createdAt: new Date() as unknown as import("firebase/firestore").Timestamp,
+          updatedAt: new Date() as unknown as import("firebase/firestore").Timestamp,
+        };
+        setState((prev) => ({
+          ...prev,
+          brands: [...prev.brands, newBrand],
+          loading: false,
+        }));
         return brandId;
       } catch (err) {
         setState((prev) => ({
@@ -74,22 +80,26 @@ export function useBrands() {
         throw err;
       }
     },
-    [fetchBrands]
+    []
   );
 
   const editBrand = useCallback(
     async (brandId: string, data: { name?: string; description?: string }) => {
-      const userId = userIdRef.current;
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         await updateBrand(brandId, data);
-        if (userId) {
-          await fetchBrands(userId);
-        }
-        if (state.currentBrand?.id === brandId) {
-          const updatedBrand = await getBrand(brandId);
-          setState((prev) => ({ ...prev, currentBrand: updatedBrand }));
-        }
+        // 楽観的更新: ローカルでブランドを更新
+        setState((prev) => ({
+          ...prev,
+          brands: prev.brands.map((b) =>
+            b.id === brandId ? { ...b, ...data, updatedAt: new Date() as unknown as import("firebase/firestore").Timestamp } : b
+          ),
+          currentBrand:
+            prev.currentBrand?.id === brandId
+              ? { ...prev.currentBrand, ...data, updatedAt: new Date() as unknown as import("firebase/firestore").Timestamp }
+              : prev.currentBrand,
+          loading: false,
+        }));
       } catch (err) {
         setState((prev) => ({
           ...prev,
@@ -99,21 +109,21 @@ export function useBrands() {
         throw err;
       }
     },
-    [fetchBrands, state.currentBrand?.id]
+    []
   );
 
   const removeBrand = useCallback(
     async (brandId: string) => {
-      const userId = userIdRef.current;
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
         await deleteBrand(brandId);
-        if (state.currentBrand?.id === brandId) {
-          setState((prev) => ({ ...prev, currentBrand: null }));
-        }
-        if (userId) {
-          await fetchBrands(userId);
-        }
+        // 楽観的更新: ローカルでブランドを削除
+        setState((prev) => ({
+          ...prev,
+          brands: prev.brands.filter((b) => b.id !== brandId),
+          currentBrand: prev.currentBrand?.id === brandId ? null : prev.currentBrand,
+          loading: false,
+        }));
       } catch (err) {
         setState((prev) => ({
           ...prev,
@@ -123,7 +133,7 @@ export function useBrands() {
         throw err;
       }
     },
-    [fetchBrands, state.currentBrand?.id]
+    []
   );
 
   return {

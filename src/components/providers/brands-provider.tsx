@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useRef, ReactNode } from "react";
 import { useBrands } from "@/hooks/useBrands";
 import { useAuthContext } from "./auth-provider";
 import type { Brand } from "@/types";
@@ -22,11 +22,17 @@ const BrandsContext = createContext<BrandsContextType | null>(null);
 export function BrandsProvider({ children }: { children: ReactNode }) {
   const { firebaseUser } = useAuthContext();
   const brandsState = useBrands();
+  const fetchedUserIdRef = useRef<string | null>(null);
 
-  // ユーザーがログインしたら自動的にブランドを取得
+  // 初回フェッチのみ実行（同じユーザーで複数回フェッチしない）
   useEffect(() => {
-    if (firebaseUser) {
+    if (firebaseUser && fetchedUserIdRef.current !== firebaseUser.uid) {
+      fetchedUserIdRef.current = firebaseUser.uid;
       brandsState.fetchBrands(firebaseUser.uid);
+    }
+    // ログアウト時にリセット
+    if (!firebaseUser) {
+      fetchedUserIdRef.current = null;
     }
   }, [firebaseUser]);
 

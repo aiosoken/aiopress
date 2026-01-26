@@ -45,11 +45,11 @@ export default function DesignSystemPage() {
   const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
   const [designSystem, setDesignSystem] = useState<Partial<DesignSystem>>({
     colors: {
-      primary: "#3b82f6",
-      secondary: "#64748b",
-      accent: "#f59e0b",
-      background: "#ffffff",
-      text: "#000000",
+      primary: "#F25533",
+      secondary: "#3054AD",
+      accent: "#F25533",
+      background: "#FFFFFF",
+      text: "#1A1A1A",
     },
     typography: {
       fontFamily: "Noto Sans JP",
@@ -102,11 +102,11 @@ export default function DesignSystemPage() {
         // デフォルト値を使用
         setDesignSystem({
           colors: {
-            primary: "#3b82f6",
-            secondary: "#64748b",
-            accent: "#f59e0b",
-            background: "#ffffff",
-            text: "#000000",
+            primary: "#F25533",
+            secondary: "#3054AD",
+            accent: "#F25533",
+            background: "#FFFFFF",
+            text: "#1A1A1A",
           },
           typography: {
             fontFamily: "Noto Sans JP",
@@ -294,80 +294,80 @@ export default function DesignSystemPage() {
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={designSystem.colors?.primary || "#3b82f6"}
+                    value={designSystem.colors?.primary || "#F25533"}
                     onChange={(e) => handleColorChange("primary", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Label>プライマリ</Label>
                     <Input
-                      value={designSystem.colors?.primary || "#3b82f6"}
+                      value={designSystem.colors?.primary || "#F25533"}
                       onChange={(e) => handleColorChange("primary", e.target.value)}
-                      placeholder="#3b82f6"
+                      placeholder="#F25533"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={designSystem.colors?.secondary || "#64748b"}
+                    value={designSystem.colors?.secondary || "#3054AD"}
                     onChange={(e) => handleColorChange("secondary", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Label>セカンダリ</Label>
                     <Input
-                      value={designSystem.colors?.secondary || "#64748b"}
+                      value={designSystem.colors?.secondary || "#3054AD"}
                       onChange={(e) => handleColorChange("secondary", e.target.value)}
-                      placeholder="#64748b"
+                      placeholder="#3054AD"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={designSystem.colors?.accent || "#f59e0b"}
+                    value={designSystem.colors?.accent || "#F25533"}
                     onChange={(e) => handleColorChange("accent", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Label>アクセント</Label>
                     <Input
-                      value={designSystem.colors?.accent || "#f59e0b"}
+                      value={designSystem.colors?.accent || "#F25533"}
                       onChange={(e) => handleColorChange("accent", e.target.value)}
-                      placeholder="#f59e0b"
+                      placeholder="#F25533"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={designSystem.colors?.background || "#ffffff"}
+                    value={designSystem.colors?.background || "#FFFFFF"}
                     onChange={(e) => handleColorChange("background", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Label>背景</Label>
                     <Input
-                      value={designSystem.colors?.background || "#ffffff"}
+                      value={designSystem.colors?.background || "#FFFFFF"}
                       onChange={(e) => handleColorChange("background", e.target.value)}
-                      placeholder="#ffffff"
+                      placeholder="#FFFFFF"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={designSystem.colors?.text || "#000000"}
+                    value={designSystem.colors?.text || "#1A1A1A"}
                     onChange={(e) => handleColorChange("text", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
                   <div className="flex-1">
                     <Label>テキスト</Label>
                     <Input
-                      value={designSystem.colors?.text || "#000000"}
+                      value={designSystem.colors?.text || "#1A1A1A"}
                       onChange={(e) => handleColorChange("text", e.target.value)}
-                      placeholder="#000000"
+                      placeholder="#1A1A1A"
                     />
                   </div>
                 </div>

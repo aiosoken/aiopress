@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { DashboardContent } from '@/components/dashboard-content';
-import { AuthProvider } from '@/components/providers/auth-provider';
 
 const meta: Meta<typeof DashboardContent> = {
   title: 'Components/DashboardContent',
@@ -11,11 +10,9 @@ const meta: Meta<typeof DashboardContent> = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <AuthProvider>
-        <div className="min-h-screen bg-background">
-          <Story />
-        </div>
-      </AuthProvider>
+      <div className="min-h-screen bg-background">
+        <Story />
+      </div>
     ),
   ],
 };

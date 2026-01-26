@@ -18,10 +18,18 @@ export async function uploadFile(
   file: File,
   path: string
 ): Promise<{ storagePath: string; downloadUrl: string }> {
-  const storageRef = ref(checkStorageInit(), path);
-  await uploadBytes(storageRef, file);
-  const downloadUrl = await getDownloadURL(storageRef);
-  return { storagePath: path, downloadUrl };
+  try {
+    const storageRef = ref(checkStorageInit(), path);
+    console.log("Uploading file to:", path);
+    await uploadBytes(storageRef, file);
+    console.log("Upload complete, getting download URL");
+    const downloadUrl = await getDownloadURL(storageRef);
+    console.log("Download URL:", downloadUrl);
+    return { storagePath: path, downloadUrl };
+  } catch (error) {
+    console.error("Storage upload error:", error);
+    throw error;
+  }
 }
 
 export async function uploadAsset(

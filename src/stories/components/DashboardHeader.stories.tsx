@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AuthProvider } from '@/components/providers/auth-provider';
 
 const meta: Meta<typeof DashboardHeader> = {
   title: 'Components/DashboardHeader',
@@ -12,13 +11,11 @@ const meta: Meta<typeof DashboardHeader> = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <AuthProvider>
-        <SidebarProvider>
-          <div className="min-h-screen bg-background">
-            <Story />
-          </div>
-        </SidebarProvider>
-      </AuthProvider>
+      <SidebarProvider>
+        <div className="min-h-screen bg-background">
+          <Story />
+        </div>
+      </SidebarProvider>
     ),
   ],
 };
