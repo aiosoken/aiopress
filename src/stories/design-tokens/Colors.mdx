@@ -1,0 +1,277 @@
+{/* Colors.mdx */}
+import { Meta, ColorPalette, ColorItem } from '@storybook/blocks';
+
+<Meta title="Design Tokens/Colors" />
+
+# Color Tokens
+
+AIOPressで使用されるカラーパレットです。これらの色はCSS変数として定義されており、ライトモードとダークモードの両方に対応しています。
+
+## Primary Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Primary"
+    subtitle="--primary"
+    colors={{
+      'Light': 'oklch(0.205 0 0)',
+      'Dark': 'oklch(0.922 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Primary Foreground"
+    subtitle="--primary-foreground"
+    colors={{
+      'Light': 'oklch(0.985 0 0)',
+      'Dark': 'oklch(0.205 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Secondary Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Secondary"
+    subtitle="--secondary"
+    colors={{
+      'Light': 'oklch(0.97 0 0)',
+      'Dark': 'oklch(0.269 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Secondary Foreground"
+    subtitle="--secondary-foreground"
+    colors={{
+      'Light': 'oklch(0.205 0 0)',
+      'Dark': 'oklch(0.985 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Background & Foreground
+
+<ColorPalette>
+  <ColorItem
+    title="Background"
+    subtitle="--background"
+    colors={{
+      'Light': 'oklch(1 0 0)',
+      'Dark': 'oklch(0.145 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Foreground"
+    subtitle="--foreground"
+    colors={{
+      'Light': 'oklch(0.145 0 0)',
+      'Dark': 'oklch(0.985 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Card Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Card"
+    subtitle="--card"
+    colors={{
+      'Light': 'oklch(1 0 0)',
+      'Dark': 'oklch(0.205 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Card Foreground"
+    subtitle="--card-foreground"
+    colors={{
+      'Light': 'oklch(0.145 0 0)',
+      'Dark': 'oklch(0.985 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Muted Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Muted"
+    subtitle="--muted"
+    colors={{
+      'Light': 'oklch(0.97 0 0)',
+      'Dark': 'oklch(0.269 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Muted Foreground"
+    subtitle="--muted-foreground"
+    colors={{
+      'Light': 'oklch(0.556 0 0)',
+      'Dark': 'oklch(0.708 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Accent Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Accent"
+    subtitle="--accent"
+    colors={{
+      'Light': 'oklch(0.97 0 0)',
+      'Dark': 'oklch(0.269 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Accent Foreground"
+    subtitle="--accent-foreground"
+    colors={{
+      'Light': 'oklch(0.205 0 0)',
+      'Dark': 'oklch(0.985 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Destructive Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Destructive"
+    subtitle="--destructive"
+    colors={{
+      'Light': 'oklch(0.577 0.245 27.325)',
+      'Dark': 'oklch(0.704 0.191 22.216)',
+    }}
+  />
+</ColorPalette>
+
+## Border & Input Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Border"
+    subtitle="--border"
+    colors={{
+      'Light': 'oklch(0.922 0 0)',
+      'Dark': 'oklch(1 0 0 / 10%)',
+    }}
+  />
+  <ColorItem
+    title="Input"
+    subtitle="--input"
+    colors={{
+      'Light': 'oklch(0.922 0 0)',
+      'Dark': 'oklch(1 0 0 / 15%)',
+    }}
+  />
+  <ColorItem
+    title="Ring"
+    subtitle="--ring"
+    colors={{
+      'Light': 'oklch(0.708 0 0)',
+      'Dark': 'oklch(0.556 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Chart Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Chart 1"
+    subtitle="--chart-1"
+    colors={{
+      'Light': 'oklch(0.646 0.222 41.116)',
+      'Dark': 'oklch(0.488 0.243 264.376)',
+    }}
+  />
+  <ColorItem
+    title="Chart 2"
+    subtitle="--chart-2"
+    colors={{
+      'Light': 'oklch(0.6 0.118 184.704)',
+      'Dark': 'oklch(0.696 0.17 162.48)',
+    }}
+  />
+  <ColorItem
+    title="Chart 3"
+    subtitle="--chart-3"
+    colors={{
+      'Light': 'oklch(0.398 0.07 227.392)',
+      'Dark': 'oklch(0.769 0.188 70.08)',
+    }}
+  />
+  <ColorItem
+    title="Chart 4"
+    subtitle="--chart-4"
+    colors={{
+      'Light': 'oklch(0.828 0.189 84.429)',
+      'Dark': 'oklch(0.627 0.265 303.9)',
+    }}
+  />
+  <ColorItem
+    title="Chart 5"
+    subtitle="--chart-5"
+    colors={{
+      'Light': 'oklch(0.769 0.188 70.08)',
+      'Dark': 'oklch(0.645 0.246 16.439)',
+    }}
+  />
+</ColorPalette>
+
+## Sidebar Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Sidebar"
+    subtitle="--sidebar"
+    colors={{
+      'Light': 'oklch(0.985 0 0)',
+      'Dark': 'oklch(0.205 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Foreground"
+    subtitle="--sidebar-foreground"
+    colors={{
+      'Light': 'oklch(0.145 0 0)',
+      'Dark': 'oklch(0.985 0 0)',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Primary"
+    subtitle="--sidebar-primary"
+    colors={{
+      'Light': 'oklch(0.205 0 0)',
+      'Dark': 'oklch(0.488 0.243 264.376)',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Accent"
+    subtitle="--sidebar-accent"
+    colors={{
+      'Light': 'oklch(0.97 0 0)',
+      'Dark': 'oklch(0.269 0 0)',
+    }}
+  />
+</ColorPalette>
+
+## Usage
+
+CSS変数を使用してスタイルを適用できます:
+
+```css
+.my-element {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+```
+
+Tailwind CSSでは以下のように使用します:
+
+```jsx
+<div className="bg-primary text-primary-foreground">
+  Content
+</div>
+```

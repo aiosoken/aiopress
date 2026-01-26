@@ -1,0 +1,64 @@
+{/* Typography.mdx */}
+import { Meta, Typeset } from '@storybook/blocks';
+
+<Meta title="Design Tokens/Typography" />
+
+# Typography
+
+AIOPressで使用されるタイポグラフィの設定です。
+
+## Font Family
+
+プロジェクトでは以下のフォントファミリーを使用しています:
+
+- **Sans-serif**: Geist Sans (`--font-geist-sans`)
+- **Monospace**: Geist Mono (`--font-geist-mono`)
+
+## Font Sizes
+
+Tailwind CSSのデフォルトフォントサイズを使用しています:
+
+| Class | Size | Line Height |
+|-------|------|-------------|
+| `text-xs` | 0.75rem (12px) | 1rem |
+| `text-sm` | 0.875rem (14px) | 1.25rem |
+| `text-base` | 1rem (16px) | 1.5rem |
+| `text-lg` | 1.125rem (18px) | 1.75rem |
+| `text-xl` | 1.25rem (20px) | 1.75rem |
+| `text-2xl` | 1.5rem (24px) | 2rem |
+| `text-3xl` | 1.875rem (30px) | 2.25rem |
+| `text-4xl` | 2.25rem (36px) | 2.5rem |
+
+## Font Weights
+
+| Class | Weight |
+|-------|--------|
+| `font-normal` | 400 |
+| `font-medium` | 500 |
+| `font-semibold` | 600 |
+| `font-bold` | 700 |
+
+## Usage Examples
+
+### Headings
+
+```jsx
+<h1 className="text-4xl font-bold">Heading 1</h1>
+<h2 className="text-3xl font-semibold">Heading 2</h2>
+<h3 className="text-2xl font-semibold">Heading 3</h3>
+<h4 className="text-xl font-medium">Heading 4</h4>
+```
+
+### Body Text
+
+```jsx
+<p className="text-base">Regular body text</p>
+<p className="text-sm text-muted-foreground">Secondary text</p>
+<p className="text-xs text-muted-foreground">Caption text</p>
+```
+
+### Code
+
+```jsx
+<code className="font-mono text-sm">inline code</code>
+```
