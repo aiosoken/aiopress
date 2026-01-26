@@ -56,6 +56,7 @@ export interface Asset {
   uploadedBy: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  status?: "processing" | "completed" | "failed";
 }
 
 export interface VoiceTone {
