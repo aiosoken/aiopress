@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuthContext } from "@/components/providers";
-import { useBrands } from "@/hooks/useBrands";
+import { useAuthContext, useBrandsContext } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,7 +41,7 @@ export default function DesignSystemPage() {
   const searchParams = useSearchParams();
   const brandIdParam = searchParams.get("brandId");
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading, fetchBrands } = useBrands();
+  const { brands, loading: brandsLoading } = useBrandsContext();
   const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
   const [designSystem, setDesignSystem] = useState<Partial<DesignSystem>>({
     colors: {
@@ -72,12 +71,6 @@ export default function DesignSystemPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggestingKeywords, setIsSuggestingKeywords] = useState(false);
   const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      fetchBrands(firebaseUser.uid);
-    }
-  }, [firebaseUser, fetchBrands]);
 
   useEffect(() => {
     if (brandIdParam) {
@@ -149,10 +142,10 @@ export default function DesignSystemPage() {
   };
 
   const handleAddKeyword = () => {
-    if (newKeyword.trim() && !designSystem.keywords.includes(newKeyword.trim())) {
+    if (newKeyword.trim() && !(designSystem.keywords ?? []).includes(newKeyword.trim())) {
       setDesignSystem((prev) => ({
         ...prev,
-        keywords: [...prev.keywords, newKeyword.trim()],
+        keywords: [...(prev.keywords ?? []), newKeyword.trim()],
       }));
       setNewKeyword("");
     }
@@ -161,15 +154,15 @@ export default function DesignSystemPage() {
   const handleRemoveKeyword = (keyword: string) => {
     setDesignSystem((prev) => ({
       ...prev,
-      keywords: prev.keywords.filter((k) => k !== keyword),
+      keywords: (prev.keywords ?? []).filter((k) => k !== keyword),
     }));
   };
 
   const handleAddValue = () => {
-    if (newValue.trim() && !designSystem.brandValues.includes(newValue.trim())) {
+    if (newValue.trim() && !(designSystem.brandValues ?? []).includes(newValue.trim())) {
       setDesignSystem((prev) => ({
         ...prev,
-        brandValues: [...prev.brandValues, newValue.trim()],
+        brandValues: [...(prev.brandValues ?? []), newValue.trim()],
       }));
       setNewValue("");
     }
@@ -178,7 +171,7 @@ export default function DesignSystemPage() {
   const handleRemoveValue = (value: string) => {
     setDesignSystem((prev) => ({
       ...prev,
-      brandValues: prev.brandValues.filter((v) => v !== value),
+      brandValues: (prev.brandValues ?? []).filter((v) => v !== value),
     }));
   };
 
@@ -230,11 +223,11 @@ export default function DesignSystemPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">デザインシステム</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold text-foreground">デザインシステム</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             ブランドのデザインシステムを管理します
           </p>
         </div>
@@ -245,8 +238,8 @@ export default function DesignSystemPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>ブランドを選択</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">ブランドを選択</CardTitle>
           <CardDescription>
             デザインシステムを編集するブランドを選択してください
           </CardDescription>
@@ -290,8 +283,8 @@ export default function DesignSystemPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <CardHeader>
-              <CardTitle>カラーパレット</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">カラーパレット</CardTitle>
               <CardDescription>
                 ブランドで使用するカラーを定義します
               </CardDescription>
@@ -383,8 +376,8 @@ export default function DesignSystemPage() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>タイポグラフィ</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">タイポグラフィ</CardTitle>
               <CardDescription>
                 ブランドで使用するフォントを定義します
               </CardDescription>
@@ -452,8 +445,8 @@ export default function DesignSystemPage() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>ボイス＆トーン</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">ボイス＆トーン</CardTitle>
               <CardDescription>
                 ブランドの声のトーンを定義します
               </CardDescription>
@@ -535,10 +528,10 @@ export default function DesignSystemPage() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>キーワード</CardTitle>
+                  <CardTitle className="text-base font-medium">キーワード</CardTitle>
                   <CardDescription>
                     ブランドを表すキーワードを定義します
                   </CardDescription>
@@ -618,8 +611,8 @@ export default function DesignSystemPage() {
           </Card>
 
           <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>ブランドバリュー</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">ブランドバリュー</CardTitle>
               <CardDescription>
                 ブランドが大切にする価値観を定義します
               </CardDescription>
@@ -651,8 +644,8 @@ export default function DesignSystemPage() {
           </Card>
 
           <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>ターゲットオーディエンス</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">ターゲットオーディエンス</CardTitle>
               <CardDescription>
                 ブランドのターゲット層を定義します
               </CardDescription>

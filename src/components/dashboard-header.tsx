@@ -143,7 +143,7 @@ export function DashboardHeader() {
                   alt={firebaseUser?.displayName || "User"}
                 />
                 <AvatarFallback>
-                  {getInitials(firebaseUser?.displayName)}
+                  {getInitials(firebaseUser?.displayName ?? null)}
                 </AvatarFallback>
               </Avatar>
             </Button>

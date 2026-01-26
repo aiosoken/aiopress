@@ -82,14 +82,10 @@ export function useAuth() {
 
     // クライアント側でのみ実行
     if (typeof window !== "undefined") {
-      // 少し遅延させてFirebase初期化を待つ
-      const timer = setTimeout(() => {
-        initAuth();
-      }, 100);
+      initAuth();
 
       return () => {
         mounted = false;
-        clearTimeout(timer);
         if (unsubscribe) {
           unsubscribe();
         }

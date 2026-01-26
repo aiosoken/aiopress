@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuthContext } from "@/components/providers";
-import { useBrands } from "@/hooks/useBrands";
+import { useAuthContext, useBrandsContext } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,7 +51,7 @@ export default function CreativesPage() {
   const searchParams = useSearchParams();
   const brandIdParam = searchParams.get("brandId");
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading, fetchBrands } = useBrands();
+  const { brands, loading: brandsLoading } = useBrandsContext();
   const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [creativeType, setCreativeType] = useState<CreativeType>("CATCH_COPY");
@@ -60,12 +59,6 @@ export default function CreativesPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [creatives, setCreatives] = useState<Creative[]>([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      fetchBrands(firebaseUser.uid);
-    }
-  }, [firebaseUser, fetchBrands]);
 
   useEffect(() => {
     if (brandIdParam) {
@@ -157,11 +150,11 @@ export default function CreativesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">クリエイティブ生成</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold text-foreground">クリエイティブ生成</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             AIを活用してブランドに最適化されたコンテンツを生成します
           </p>
         </div>
@@ -258,8 +251,8 @@ export default function CreativesPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>ブランドを選択</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">ブランドを選択</CardTitle>
           <CardDescription>
             クリエイティブを生成するブランドを選択してください
           </CardDescription>
@@ -330,36 +323,39 @@ export default function CreativesPage() {
             ) : (
               <div className="space-y-4">
                 {creatives.map((creative) => (
-                  <Card key={creative.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
+                  <Card key={creative.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                          {getTypeIcon(creative.type)}
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            {getTypeIcon(creative.type)}
+                          </div>
                           <Badge variant="secondary">
                             {getTypeLabel(creative.type)}
                           </Badge>
                           {creative.metadata?.brandFitScore && (
-                            <Badge variant="outline">
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
                               適合度: {creative.metadata.brandFitScore}%
                             </Badge>
                           )}
                         </div>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => copyToClipboard(creative.content)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <pre className="whitespace-pre-wrap text-sm">
-                        {creative.content}
-                      </pre>
+                      <div className="rounded-lg bg-muted p-4">
+                        <pre className="whitespace-pre-wrap text-sm text-foreground font-sans">
+                          {creative.content}
+                        </pre>
+                      </div>
                       {creative.prompt && (
-                        <p className="mt-4 text-xs text-muted-foreground">
-                          プロンプト: {creative.prompt}
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          <span className="font-medium">プロンプト:</span> {creative.prompt}
                         </p>
                       )}
                     </CardContent>
@@ -393,28 +389,39 @@ export default function CreativesPage() {
                     {creatives
                       .filter((c) => c.type === type)
                       .map((creative) => (
-                        <Card key={creative.id}>
-                          <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <Badge variant="secondary">
-                                {getTypeLabel(creative.type)}
-                              </Badge>
+                        <Card key={creative.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-5">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                  {getTypeIcon(creative.type)}
+                                </div>
+                                <Badge variant="secondary">
+                                  {getTypeLabel(creative.type)}
+                                </Badge>
+                                {creative.metadata?.brandFitScore && (
+                                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
+                                    適合度: {creative.metadata.brandFitScore}%
+                                  </Badge>
+                                )}
+                              </div>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
+                                className="h-8 w-8"
                                 onClick={() => copyToClipboard(creative.content)}
                               >
                                 <Copy className="h-4 w-4" />
                               </Button>
                             </div>
-                          </CardHeader>
-                          <CardContent>
-                            <pre className="whitespace-pre-wrap text-sm">
-                              {creative.content}
-                            </pre>
+                            <div className="rounded-lg bg-muted p-4">
+                              <pre className="whitespace-pre-wrap text-sm text-foreground font-sans">
+                                {creative.content}
+                              </pre>
+                            </div>
                             {creative.prompt && (
-                              <p className="mt-4 text-xs text-muted-foreground">
-                                プロンプト: {creative.prompt}
+                              <p className="mt-3 text-xs text-muted-foreground">
+                                <span className="font-medium">プロンプト:</span> {creative.prompt}
                               </p>
                             )}
                           </CardContent>

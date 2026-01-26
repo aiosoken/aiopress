@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useAuthContext } from "@/components/providers";
-import { useBrands } from "@/hooks/useBrands";
+import { useAuthContext, useBrandsContext } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,11 +44,10 @@ export default function BrandsPage() {
   const {
     brands,
     loading,
-    fetchBrands,
     addBrand,
     editBrand,
     removeBrand,
-  } = useBrands();
+  } = useBrandsContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -60,12 +58,6 @@ export default function BrandsPage() {
   } | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      fetchBrands(firebaseUser.uid);
-    }
-  }, [firebaseUser, fetchBrands]);
 
   const handleCreate = async () => {
     if (!firebaseUser || !formData.name.trim()) return;
@@ -134,11 +126,11 @@ export default function BrandsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">ブランド管理</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold text-foreground">ブランド管理</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             ブランドの作成・編集・削除ができます
           </p>
         </div>
@@ -220,25 +212,25 @@ export default function BrandsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {brands.map((brand) => (
-            <Card key={brand.id} className="group relative">
-              <CardHeader>
-                <div className="flex items-start justify-between">
+            <Card key={brand.id} className="group relative hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-primary" />
+                    <div className="h-11 w-11 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{brand.name}</CardTitle>
-                      <CardDescription className="line-clamp-1">
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{brand.name}</p>
+                      <p className="text-sm text-muted-foreground truncate">
                         {brand.description || "説明なし"}
-                      </CardDescription>
+                      </p>
                     </div>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-1">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -267,9 +259,7 @@ export default function BrandsPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full bg-transparent" asChild>
                   <Link href={`/brands/${brand.id}`}>
                     詳細を見る
                     <ArrowRight className="ml-2 h-4 w-4" />

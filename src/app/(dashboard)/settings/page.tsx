@@ -45,18 +45,18 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">設定</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-semibold text-foreground">設定</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           アカウント設定とプロフィールを管理します
         </p>
       </div>
 
       <div className="grid gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>プロフィール</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-medium">プロフィール</CardTitle>
             <CardDescription>
               あなたのプロフィール情報を管理します
             </CardDescription>
@@ -121,8 +121,8 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>アカウント情報</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-medium">アカウント情報</CardTitle>
             <CardDescription>
               アカウントの詳細情報
             </CardDescription>
@@ -160,8 +160,8 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="border-destructive/50">
-          <CardHeader>
-            <CardTitle className="text-destructive">危険な操作</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-medium text-destructive">危険な操作</CardTitle>
             <CardDescription>
               これらの操作は取り消すことができません
             </CardDescription>

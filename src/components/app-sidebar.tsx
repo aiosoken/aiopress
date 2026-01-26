@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -32,8 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuthContext } from "@/components/providers";
-import { useBrands } from "@/hooks/useBrands";
+import { useAuthContext, useBrandsContext } from "@/components/providers";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "ダッシュボード", href: "/dashboard" },
@@ -47,13 +45,7 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading, fetchBrands } = useBrands();
-
-  useEffect(() => {
-    if (firebaseUser) {
-      fetchBrands(firebaseUser.uid);
-    }
-  }, [firebaseUser, fetchBrands]);
+  const { brands, loading: brandsLoading } = useBrandsContext();
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -185,7 +177,7 @@ export function AppSidebar() {
           <Avatar className="h-9 w-9">
             <AvatarImage src={firebaseUser?.photoURL || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-              {getInitials(firebaseUser?.displayName)}
+              {getInitials(firebaseUser?.displayName ?? null)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
