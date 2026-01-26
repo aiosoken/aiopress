@@ -63,20 +63,22 @@ export function useAssets() {
       brandIdRef.current = brandId;
       setState((prev) => ({ ...prev, uploading: true, error: null }));
       try {
-        const tempId = `temp_${Date.now()}`;
+        // アセットIDを先に生成（Cloud Functionsで使用）
+        const assetId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const { storagePath, downloadUrl } = await uploadAsset(
           brandId,
-          tempId,
+          assetId,
           file
         );
 
-        const assetId = await createAsset(
+        await createAsset(
           brandId,
           file.name,
           file.type,
           storagePath,
           downloadUrl,
-          userId || "anonymous"
+          userId || "anonymous",
+          file.size
         );
 
         await fetchAssets(brandId);

@@ -112,15 +112,19 @@ export async function createAsset(
   fileType: string,
   storagePath: string,
   downloadUrl: string,
-  uploadedBy: string
+  uploadedBy: string,
+  fileSize?: number
 ): Promise<string> {
   const assetRef = await addDoc(collection(db, "assets"), {
     brandId,
     fileName,
     fileType,
+    fileSize: fileSize || 0,
+    fileUrl: downloadUrl,
     storagePath,
     downloadUrl,
     uploadedBy,
+    status: "processing",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

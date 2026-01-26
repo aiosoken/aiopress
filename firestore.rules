@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ヘルパー関数
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isBrandMember(brandId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/brandMembers/$(brandId + '_' + request.auth.uid));
+    }
+    
+    function isBrandOwner(brandId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/brandMembers/$(brandId + '_' + request.auth.uid)).data.role == 'OWNER';
+    }
+    
+    function isBrandAdmin(brandId) {
+      let memberData = get(/databases/$(database)/documents/brandMembers/$(brandId + '_' + request.auth.uid)).data;
+      return memberData.role == 'OWNER' || memberData.role == 'ADMIN';
+    }
+    
+    // ユーザープロファイル
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ブランド
+    match /brands/{brandId} {
+      allow read: if isBrandMember(brandId);
+      allow create: if isAuthenticated();
+      allow update, delete: if isBrandOwner(brandId);
+    }
+    
+    // ブランドメンバー
+    match /brandMembers/{memberId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isBrandOwner(resource.data.brandId);
+    }
+    
+    // 資産
+    match /assets/{assetId} {
+      allow read: if isBrandMember(resource.data.brandId);
+      allow create: if isAuthenticated() && isBrandMember(request.resource.data.brandId);
+      allow update, delete: if isBrandMember(resource.data.brandId);
+    }
+    
+    // デザインシステム
+    match /designSystems/{brandId} {
+      allow read: if isBrandMember(brandId);
+      allow write: if isBrandOwner(brandId) || isBrandAdmin(brandId);
+    }
+    
+    // クリエイティブ
+    match /creatives/{creativeId} {
+      allow read: if isBrandMember(resource.data.brandId);
+      allow create: if isAuthenticated() && isBrandMember(request.resource.data.brandId);
+      allow update, delete: if isBrandMember(resource.data.brandId);
+    }
+  }
+}
