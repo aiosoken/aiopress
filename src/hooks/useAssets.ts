@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from "react";
 import {
   getBrandAssets,
-  getAsset,
   createAsset,
   updateAsset,
   deleteAsset,
@@ -28,12 +27,14 @@ export function useAssets() {
     error: null,
   });
   const brandIdRef = useRef<string | null>(null);
+  const assetsRef = useRef<Asset[]>([]);
 
   const fetchAssets = useCallback(async (brandId: string) => {
     brandIdRef.current = brandId;
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const assets = await getBrandAssets(brandId);
+      assetsRef.current = assets;
       setState((prev) => ({ ...prev, assets, loading: false }));
     } catch (err) {
       setState((prev) => ({
@@ -44,18 +45,16 @@ export function useAssets() {
     }
   }, []);
 
-  const selectAsset = useCallback(async (assetId: string) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const asset = await getAsset(assetId);
-      setState((prev) => ({ ...prev, currentAsset: asset, loading: false }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to fetch asset",
-      }));
+  // ローカルキャッシュから選択（APIコール不要）
+  const selectAsset = useCallback((assetId: string | null) => {
+    if (!assetId) {
+      setState((prev) => ({ ...prev, currentAsset: null }));
+      return;
     }
+    setState((prev) => {
+      const asset = prev.assets.find((a) => a.id === assetId) || null;
+      return { ...prev, currentAsset: asset };
+    });
   }, []);
 
   const uploadNewAsset = useCallback(
@@ -85,10 +84,12 @@ export function useAssets() {
         setState((prev) => ({ ...prev, uploading: false }));
         return assetId;
       } catch (err) {
+        console.error("Asset upload error:", err);
+        const errorMessage = err instanceof Error ? err.message : "Failed to upload asset";
         setState((prev) => ({
           ...prev,
           uploading: false,
-          error: err instanceof Error ? err.message : "Failed to upload asset",
+          error: errorMessage,
         }));
         throw err;
       }
@@ -96,58 +97,63 @@ export function useAssets() {
     [fetchAssets]
   );
 
-  const editAsset = useCallback(
-    async (assetId: string, data: Partial<Asset>) => {
-      const brandId = brandIdRef.current;
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        await updateAsset(assetId, data);
-        if (brandId) {
-          await fetchAssets(brandId);
-        }
-        if (state.currentAsset?.id === assetId) {
-          const updatedAsset = await getAsset(assetId);
-          setState((prev) => ({ ...prev, currentAsset: updatedAsset }));
-        }
-      } catch (err) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: err instanceof Error ? err.message : "Failed to update asset",
-        }));
-        throw err;
-      }
-    },
-    [fetchAssets, state.currentAsset?.id]
-  );
+  // 楽観的更新（全データ再取得しない）
+  const editAsset = useCallback(async (assetId: string, data: Partial<Asset>) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      await updateAsset(assetId, data);
+      // 楽観的更新：ローカルのstateを直接更新
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        assets: prev.assets.map((a) =>
+          a.id === assetId ? { ...a, ...data } : a
+        ),
+        currentAsset:
+          prev.currentAsset?.id === assetId
+            ? { ...prev.currentAsset, ...data }
+            : prev.currentAsset,
+      }));
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err instanceof Error ? err.message : "Failed to update asset",
+      }));
+      throw err;
+    }
+  }, []);
 
-  const removeAsset = useCallback(
-    async (assetId: string) => {
-      const brandId = brandIdRef.current;
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const asset = await getAsset(assetId);
-        if (asset?.storagePath) {
-          await deleteFile(asset.storagePath);
-        }
-        await deleteAsset(assetId);
-        if (state.currentAsset?.id === assetId) {
-          setState((prev) => ({ ...prev, currentAsset: null }));
-        }
-        if (brandId) {
-          await fetchAssets(brandId);
-        }
-      } catch (err) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: err instanceof Error ? err.message : "Failed to delete asset",
-        }));
-        throw err;
+  // 楽観的更新（全データ再取得しない）
+  const removeAsset = useCallback(async (assetId: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      // refからstoragePathを取得（API呼び出し不要）
+      const asset = assetsRef.current.find((a) => a.id === assetId);
+      if (asset?.storagePath) {
+        await deleteFile(asset.storagePath);
       }
-    },
-    [fetchAssets, state.currentAsset?.id]
-  );
+      await deleteAsset(assetId);
+
+      // refも更新
+      assetsRef.current = assetsRef.current.filter((a) => a.id !== assetId);
+
+      // 楽観的更新：ローカルのstateから削除
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        assets: prev.assets.filter((a) => a.id !== assetId),
+        currentAsset: prev.currentAsset?.id === assetId ? null : prev.currentAsset,
+      }));
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err instanceof Error ? err.message : "Failed to delete asset",
+      }));
+      throw err;
+    }
+  }, []);
 
   return {
     ...state,

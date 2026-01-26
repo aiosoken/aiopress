@@ -1,5 +1,5 @@
 {/* Colors.mdx */}
-import { Meta, ColorPalette, ColorItem } from '@storybook/blocks';
+import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
 
 <Meta title="Design Tokens/Colors" />
 
@@ -11,19 +11,19 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
 
 <ColorPalette>
   <ColorItem
-    title="Primary"
+    title="Primary (Orange)"
     subtitle="--primary"
     colors={{
-      'Light': 'oklch(0.205 0 0)',
-      'Dark': 'oklch(0.922 0 0)',
+      'Light': '#F25533',
+      'Dark': '#F25533',
     }}
   />
   <ColorItem
     title="Primary Foreground"
     subtitle="--primary-foreground"
     colors={{
-      'Light': 'oklch(0.985 0 0)',
-      'Dark': 'oklch(0.205 0 0)',
+      'Light': '#FFFFFF',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -32,19 +32,19 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
 
 <ColorPalette>
   <ColorItem
-    title="Secondary"
+    title="Secondary (Blue)"
     subtitle="--secondary"
     colors={{
-      'Light': 'oklch(0.97 0 0)',
-      'Dark': 'oklch(0.269 0 0)',
+      'Light': '#3054AD',
+      'Dark': '#3054AD',
     }}
   />
   <ColorItem
     title="Secondary Foreground"
     subtitle="--secondary-foreground"
     colors={{
-      'Light': 'oklch(0.205 0 0)',
-      'Dark': 'oklch(0.985 0 0)',
+      'Light': '#FFFFFF',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -56,16 +56,16 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Background"
     subtitle="--background"
     colors={{
-      'Light': 'oklch(1 0 0)',
-      'Dark': 'oklch(0.145 0 0)',
+      'Light': '#FFFFFF',
+      'Dark': '#1A1A1A',
     }}
   />
   <ColorItem
     title="Foreground"
     subtitle="--foreground"
     colors={{
-      'Light': 'oklch(0.145 0 0)',
-      'Dark': 'oklch(0.985 0 0)',
+      'Light': '#1A1A1A',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -77,16 +77,37 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Card"
     subtitle="--card"
     colors={{
-      'Light': 'oklch(1 0 0)',
-      'Dark': 'oklch(0.205 0 0)',
+      'Light': '#FFFFFF',
+      'Dark': '#2D2D2D',
     }}
   />
   <ColorItem
     title="Card Foreground"
     subtitle="--card-foreground"
     colors={{
-      'Light': 'oklch(0.145 0 0)',
-      'Dark': 'oklch(0.985 0 0)',
+      'Light': '#1A1A1A',
+      'Dark': '#FFFFFF',
+    }}
+  />
+</ColorPalette>
+
+## Popover Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Popover"
+    subtitle="--popover"
+    colors={{
+      'Light': '#FFFFFF',
+      'Dark': '#2D2D2D',
+    }}
+  />
+  <ColorItem
+    title="Popover Foreground"
+    subtitle="--popover-foreground"
+    colors={{
+      'Light': '#1A1A1A',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -98,16 +119,16 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Muted"
     subtitle="--muted"
     colors={{
-      'Light': 'oklch(0.97 0 0)',
-      'Dark': 'oklch(0.269 0 0)',
+      'Light': '#F5F5F5',
+      'Dark': '#2D2D2D',
     }}
   />
   <ColorItem
     title="Muted Foreground"
     subtitle="--muted-foreground"
     colors={{
-      'Light': 'oklch(0.556 0 0)',
-      'Dark': 'oklch(0.708 0 0)',
+      'Light': '#666666',
+      'Dark': '#999999',
     }}
   />
 </ColorPalette>
@@ -119,16 +140,16 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Accent"
     subtitle="--accent"
     colors={{
-      'Light': 'oklch(0.97 0 0)',
-      'Dark': 'oklch(0.269 0 0)',
+      'Light': '#F25533',
+      'Dark': '#F25533',
     }}
   />
   <ColorItem
     title="Accent Foreground"
     subtitle="--accent-foreground"
     colors={{
-      'Light': 'oklch(0.205 0 0)',
-      'Dark': 'oklch(0.985 0 0)',
+      'Light': '#FFFFFF',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -140,8 +161,16 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Destructive"
     subtitle="--destructive"
     colors={{
-      'Light': 'oklch(0.577 0.245 27.325)',
-      'Dark': 'oklch(0.704 0.191 22.216)',
+      'Light': '#EF4444',
+      'Dark': '#EF4444',
+    }}
+  />
+  <ColorItem
+    title="Destructive Foreground"
+    subtitle="--destructive-foreground"
+    colors={{
+      'Light': '#FFFFFF',
+      'Dark': '#FFFFFF',
     }}
   />
 </ColorPalette>
@@ -153,24 +182,24 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Border"
     subtitle="--border"
     colors={{
-      'Light': 'oklch(0.922 0 0)',
-      'Dark': 'oklch(1 0 0 / 10%)',
+      'Light': '#E5E5E5',
+      'Dark': 'rgba(255, 255, 255, 0.1)',
     }}
   />
   <ColorItem
     title="Input"
     subtitle="--input"
     colors={{
-      'Light': 'oklch(0.922 0 0)',
-      'Dark': 'oklch(1 0 0 / 15%)',
+      'Light': '#E5E5E5',
+      'Dark': 'rgba(255, 255, 255, 0.15)',
     }}
   />
   <ColorItem
     title="Ring"
     subtitle="--ring"
     colors={{
-      'Light': 'oklch(0.708 0 0)',
-      'Dark': 'oklch(0.556 0 0)',
+      'Light': '#3054AD',
+      'Dark': '#3054AD',
     }}
   />
 </ColorPalette>
@@ -182,40 +211,40 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Chart 1"
     subtitle="--chart-1"
     colors={{
-      'Light': 'oklch(0.646 0.222 41.116)',
-      'Dark': 'oklch(0.488 0.243 264.376)',
+      'Light': '#7890CA',
+      'Dark': '#7890CA',
     }}
   />
   <ColorItem
     title="Chart 2"
     subtitle="--chart-2"
     colors={{
-      'Light': 'oklch(0.6 0.118 184.704)',
-      'Dark': 'oklch(0.696 0.17 162.48)',
+      'Light': '#3054AD',
+      'Dark': '#3054AD',
     }}
   />
   <ColorItem
     title="Chart 3"
     subtitle="--chart-3"
     colors={{
-      'Light': 'oklch(0.398 0.07 227.392)',
-      'Dark': 'oklch(0.769 0.188 70.08)',
+      'Light': '#2A4A9A',
+      'Dark': '#2A4A9A',
     }}
   />
   <ColorItem
     title="Chart 4"
     subtitle="--chart-4"
     colors={{
-      'Light': 'oklch(0.828 0.189 84.429)',
-      'Dark': 'oklch(0.627 0.265 303.9)',
+      'Light': '#28366E',
+      'Dark': '#28366E',
     }}
   />
   <ColorItem
     title="Chart 5"
     subtitle="--chart-5"
     colors={{
-      'Light': 'oklch(0.769 0.188 70.08)',
-      'Dark': 'oklch(0.645 0.246 16.439)',
+      'Light': '#1E2A5E',
+      'Dark': '#1E2A5E',
     }}
   />
 </ColorPalette>
@@ -227,32 +256,195 @@ AIOPressで使用されるカラーパレットです。これらの色はCSS変
     title="Sidebar"
     subtitle="--sidebar"
     colors={{
-      'Light': 'oklch(0.985 0 0)',
-      'Dark': 'oklch(0.205 0 0)',
+      'Light': '#FAFAFA',
+      'Dark': '#2D2D2D',
     }}
   />
   <ColorItem
     title="Sidebar Foreground"
     subtitle="--sidebar-foreground"
     colors={{
-      'Light': 'oklch(0.145 0 0)',
-      'Dark': 'oklch(0.985 0 0)',
+      'Light': '#1A1A1A',
+      'Dark': '#FFFFFF',
     }}
   />
   <ColorItem
     title="Sidebar Primary"
     subtitle="--sidebar-primary"
     colors={{
-      'Light': 'oklch(0.205 0 0)',
-      'Dark': 'oklch(0.488 0.243 264.376)',
+      'Light': '#3054AD',
+      'Dark': '#3054AD',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Primary Foreground"
+    subtitle="--sidebar-primary-foreground"
+    colors={{
+      'Light': '#FFFFFF',
+      'Dark': '#FFFFFF',
     }}
   />
   <ColorItem
     title="Sidebar Accent"
     subtitle="--sidebar-accent"
     colors={{
-      'Light': 'oklch(0.97 0 0)',
-      'Dark': 'oklch(0.269 0 0)',
+      'Light': '#F5F5F5',
+      'Dark': '#2D2D2D',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Accent Foreground"
+    subtitle="--sidebar-accent-foreground"
+    colors={{
+      'Light': '#1A1A1A',
+      'Dark': '#FFFFFF',
+    }}
+  />
+  <ColorItem
+    title="Sidebar Border"
+    subtitle="--sidebar-border"
+    colors={{
+      'Light': '#E5E5E5',
+      'Dark': 'rgba(255, 255, 255, 0.1)',
+    }}
+  />
+</ColorPalette>
+
+## Orange Palette
+
+<ColorPalette>
+  <ColorItem
+    title="Orange-100"
+    subtitle="--orange-100"
+    colors={{
+      'Light': '#FDEAE5',
+    }}
+  />
+  <ColorItem
+    title="Orange-600 (Main)"
+    subtitle="--orange-600"
+    colors={{
+      'Light': '#F25533',
+    }}
+  />
+  <ColorItem
+    title="Orange-700"
+    subtitle="--orange-700"
+    colors={{
+      'Light': '#CE461B',
+    }}
+  />
+</ColorPalette>
+
+## Blue Palette
+
+<ColorPalette>
+  <ColorItem
+    title="Blue-300"
+    subtitle="--blue-300"
+    colors={{
+      'Light': '#7890CA',
+    }}
+  />
+  <ColorItem
+    title="Blue-600 (Main)"
+    subtitle="--blue-600"
+    colors={{
+      'Light': '#3054AD',
+    }}
+  />
+  <ColorItem
+    title="Blue-800"
+    subtitle="--blue-800"
+    colors={{
+      'Light': '#28366E',
+    }}
+  />
+</ColorPalette>
+
+## Neutral Colors
+
+<ColorPalette>
+  <ColorItem
+    title="White"
+    subtitle="--neutral-white"
+    colors={{
+      'Light': '#FFFFFF',
+    }}
+  />
+  <ColorItem
+    title="Gray-100"
+    subtitle="--neutral-gray-100"
+    colors={{
+      'Light': '#F5F5F5',
+    }}
+  />
+  <ColorItem
+    title="Gray-200"
+    subtitle="--neutral-gray-200"
+    colors={{
+      'Light': '#E5E5E5',
+    }}
+  />
+  <ColorItem
+    title="Gray-400"
+    subtitle="--neutral-gray-400"
+    colors={{
+      'Light': '#999999',
+    }}
+  />
+  <ColorItem
+    title="Gray-600"
+    subtitle="--neutral-gray-600"
+    colors={{
+      'Light': '#666666',
+    }}
+  />
+  <ColorItem
+    title="Gray-800"
+    subtitle="--neutral-gray-800"
+    colors={{
+      'Light': '#2D2D2D',
+    }}
+  />
+  <ColorItem
+    title="Black"
+    subtitle="--neutral-black"
+    colors={{
+      'Light': '#1A1A1A',
+    }}
+  />
+</ColorPalette>
+
+## Feedback Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Success"
+    subtitle="--success"
+    colors={{
+      'Light': '#10B981',
+    }}
+  />
+  <ColorItem
+    title="Warning"
+    subtitle="--warning"
+    colors={{
+      'Light': '#F59E0B',
+    }}
+  />
+  <ColorItem
+    title="Error"
+    subtitle="--error"
+    colors={{
+      'Light': '#EF4444',
+    }}
+  />
+  <ColorItem
+    title="Info"
+    subtitle="--info"
+    colors={{
+      'Light': '#3054AD',
     }}
   />
 </ColorPalette>

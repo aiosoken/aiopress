@@ -1,5 +1,5 @@
 {/* Spacing.mdx */}
-import { Meta } from '@storybook/blocks';
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Design Tokens/Spacing" />
 
@@ -32,16 +32,16 @@ AIOPressで使用されるスペーシングの設定です。Tailwind CSSのデ
 
 カスタムボーダー半径の設定:
 
-| Variable | Value |
-|----------|-------|
-| `--radius` | 0.625rem (10px) |
-| `--radius-sm` | calc(var(--radius) - 4px) |
-| `--radius-md` | calc(var(--radius) - 2px) |
-| `--radius-lg` | var(--radius) |
-| `--radius-xl` | calc(var(--radius) + 4px) |
-| `--radius-2xl` | calc(var(--radius) + 8px) |
-| `--radius-3xl` | calc(var(--radius) + 12px) |
-| `--radius-4xl` | calc(var(--radius) + 16px) |
+| Token | Value | 用途 |
+|-------|-------|------|
+| `--radius` | 0.65rem | ベース値 |
+| `--radius-sm` | calc(var(--radius) - 4px) | 小さい要素 |
+| `--radius-md` | calc(var(--radius) - 2px) | 中程度の要素 |
+| `--radius-lg` | var(--radius) | 標準的な要素 |
+| `--radius-xl` | calc(var(--radius) + 4px) | 大きい要素 |
+| `--radius-2xl` | calc(var(--radius) + 8px) | より大きい要素 |
+| `--radius-3xl` | calc(var(--radius) + 12px) | 非常に大きい要素 |
+| `--radius-4xl` | calc(var(--radius) + 16px) | 最大の要素 |
 
 ## Usage Examples
 

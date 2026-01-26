@@ -10,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  documentId,
 } from "firebase/firestore";
 import { db } from "./config";
 import type {
@@ -67,11 +68,26 @@ export async function getUserBrands(userId: string): Promise<Brand[]> {
   const brandIds = membersSnapshot.docs.map((doc) => doc.data().brandId);
   if (brandIds.length === 0) return [];
 
-  // 並列でブランドを取得（N+1問題を解消）
-  const brandPromises = brandIds.map((brandId) => getBrand(brandId));
-  const brandsResult = await Promise.all(brandPromises);
+  // inクエリで一括取得（最大30件、N+1問題を解消）
+  // 30件を超える場合は分割して取得
+  const brands: Brand[] = [];
+  const chunks = [];
+  for (let i = 0; i < brandIds.length; i += 30) {
+    chunks.push(brandIds.slice(i, i + 30));
+  }
 
-  return brandsResult.filter((brand): brand is Brand => brand !== null);
+  for (const chunk of chunks) {
+    const brandsQuery = query(
+      collection(checkDbInit(), "brands"),
+      where(documentId(), "in", chunk)
+    );
+    const brandsSnapshot = await getDocs(brandsQuery);
+    brandsSnapshot.docs.forEach((doc) => {
+      brands.push({ id: doc.id, ...doc.data() } as Brand);
+    });
+  }
+
+  return brands;
 }
 
 export async function updateBrand(
@@ -120,20 +136,27 @@ export async function createAsset(
   uploadedBy: string,
   fileSize?: number
 ): Promise<string> {
-  const assetRef = await addDoc(collection(checkDbInit(), "assets"), {
-    brandId,
-    fileName,
-    fileType,
-    fileSize: fileSize || 0,
-    fileUrl: downloadUrl,
-    storagePath,
-    downloadUrl,
-    uploadedBy,
-    status: "processing",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return assetRef.id;
+  try {
+    console.log("Creating asset in Firestore:", { brandId, fileName, fileType });
+    const assetRef = await addDoc(collection(checkDbInit(), "assets"), {
+      brandId,
+      fileName,
+      fileType,
+      fileSize: fileSize || 0,
+      fileUrl: downloadUrl,
+      storagePath,
+      downloadUrl,
+      uploadedBy,
+      status: "processing",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    console.log("Asset created with ID:", assetRef.id);
+    return assetRef.id;
+  } catch (error) {
+    console.error("Firestore createAsset error:", error);
+    throw error;
+  }
 }
 
 export async function getAsset(assetId: string): Promise<Asset | null> {
@@ -143,13 +166,20 @@ export async function getAsset(assetId: string): Promise<Asset | null> {
 }
 
 export async function getBrandAssets(brandId: string): Promise<Asset[]> {
-  const assetsQuery = query(
-    collection(checkDbInit(), "assets"),
-    where("brandId", "==", brandId),
-    orderBy("createdAt", "desc")
-  );
-  const snapshot = await getDocs(assetsQuery);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Asset));
+  try {
+    console.log("Fetching assets for brand:", brandId);
+    const assetsQuery = query(
+      collection(checkDbInit(), "assets"),
+      where("brandId", "==", brandId),
+      orderBy("createdAt", "desc")
+    );
+    const snapshot = await getDocs(assetsQuery);
+    console.log("Fetched assets count:", snapshot.docs.length);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Asset));
+  } catch (error) {
+    console.error("Firestore getBrandAssets error:", error);
+    throw error;
+  }
 }
 
 export async function updateAsset(
