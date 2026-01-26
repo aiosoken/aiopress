@@ -8,7 +8,7 @@ import {
   User as FirebaseUser,
   updateProfile,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { auth, db } from "./config";
 import type { User } from "@/types";
 
@@ -127,12 +127,13 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   // Firestoreからの取得に失敗した場合、Firebase Authの情報を使用
+  const now = Timestamp.now();
   return {
     id: firebaseUser.uid,
     email: firebaseUser.email || "",
     displayName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
     photoURL: firebaseUser.photoURL || null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   } as User;
 }

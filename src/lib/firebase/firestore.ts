@@ -21,12 +21,19 @@ import type {
   BrandRole,
 } from "@/types";
 
+function checkDbInit() {
+  if (!db) {
+    throw new Error("Firestore is not initialized. Please check your environment variables.");
+  }
+  return db;
+}
+
 export async function createBrand(
   name: string,
   ownerId: string,
   description?: string
 ): Promise<string> {
-  const brandRef = await addDoc(collection(db, "brands"), {
+  const brandRef = await addDoc(collection(checkDbInit(), "brands"), {
     name,
     description: description || "",
     ownerId,
@@ -34,7 +41,7 @@ export async function createBrand(
     updatedAt: serverTimestamp(),
   });
 
-  await addDoc(collection(db, "brandMembers"), {
+  await addDoc(collection(checkDbInit(), "brandMembers"), {
     brandId: brandRef.id,
     userId: ownerId,
     role: "OWNER" as BrandRole,
@@ -45,14 +52,14 @@ export async function createBrand(
 }
 
 export async function getBrand(brandId: string): Promise<Brand | null> {
-  const brandDoc = await getDoc(doc(db, "brands", brandId));
+  const brandDoc = await getDoc(doc(checkDbInit(), "brands", brandId));
   if (!brandDoc.exists()) return null;
   return { id: brandDoc.id, ...brandDoc.data() } as Brand;
 }
 
 export async function getUserBrands(userId: string): Promise<Brand[]> {
   const membersQuery = query(
-    collection(db, "brandMembers"),
+    collection(checkDbInit(), "brandMembers"),
     where("userId", "==", userId)
   );
   const membersSnapshot = await getDocs(membersQuery);
@@ -60,32 +67,30 @@ export async function getUserBrands(userId: string): Promise<Brand[]> {
   const brandIds = membersSnapshot.docs.map((doc) => doc.data().brandId);
   if (brandIds.length === 0) return [];
 
-  const brands: Brand[] = [];
-  for (const brandId of brandIds) {
-    const brand = await getBrand(brandId);
-    if (brand) brands.push(brand);
-  }
+  // 並列でブランドを取得（N+1問題を解消）
+  const brandPromises = brandIds.map((brandId) => getBrand(brandId));
+  const brandsResult = await Promise.all(brandPromises);
 
-  return brands;
+  return brandsResult.filter((brand): brand is Brand => brand !== null);
 }
 
 export async function updateBrand(
   brandId: string,
   data: Partial<Omit<Brand, "id" | "createdAt" | "ownerId">>
 ): Promise<void> {
-  await updateDoc(doc(db, "brands", brandId), {
+  await updateDoc(doc(checkDbInit(), "brands", brandId), {
     ...data,
     updatedAt: serverTimestamp(),
   });
 }
 
 export async function deleteBrand(brandId: string): Promise<void> {
-  await deleteDoc(doc(db, "brands", brandId));
+  await deleteDoc(doc(checkDbInit(), "brands", brandId));
 }
 
 export async function getBrandMembers(brandId: string): Promise<BrandMember[]> {
   const membersQuery = query(
-    collection(db, "brandMembers"),
+    collection(checkDbInit(), "brandMembers"),
     where("brandId", "==", brandId)
   );
   const snapshot = await getDocs(membersQuery);
@@ -97,7 +102,7 @@ export async function addBrandMember(
   userId: string,
   role: BrandRole
 ): Promise<string> {
-  const memberRef = await addDoc(collection(db, "brandMembers"), {
+  const memberRef = await addDoc(collection(checkDbInit(), "brandMembers"), {
     brandId,
     userId,
     role,
@@ -115,7 +120,7 @@ export async function createAsset(
   uploadedBy: string,
   fileSize?: number
 ): Promise<string> {
-  const assetRef = await addDoc(collection(db, "assets"), {
+  const assetRef = await addDoc(collection(checkDbInit(), "assets"), {
     brandId,
     fileName,
     fileType,
@@ -132,14 +137,14 @@ export async function createAsset(
 }
 
 export async function getAsset(assetId: string): Promise<Asset | null> {
-  const assetDoc = await getDoc(doc(db, "assets", assetId));
+  const assetDoc = await getDoc(doc(checkDbInit(), "assets", assetId));
   if (!assetDoc.exists()) return null;
   return { id: assetDoc.id, ...assetDoc.data() } as Asset;
 }
 
 export async function getBrandAssets(brandId: string): Promise<Asset[]> {
   const assetsQuery = query(
-    collection(db, "assets"),
+    collection(checkDbInit(), "assets"),
     where("brandId", "==", brandId),
     orderBy("createdAt", "desc")
   );
@@ -151,20 +156,20 @@ export async function updateAsset(
   assetId: string,
   data: Partial<Omit<Asset, "id" | "createdAt" | "brandId" | "uploadedBy">>
 ): Promise<void> {
-  await updateDoc(doc(db, "assets", assetId), {
+  await updateDoc(doc(checkDbInit(), "assets", assetId), {
     ...data,
     updatedAt: serverTimestamp(),
   });
 }
 
 export async function deleteAsset(assetId: string): Promise<void> {
-  await deleteDoc(doc(db, "assets", assetId));
+  await deleteDoc(doc(checkDbInit(), "assets", assetId));
 }
 
 export async function getDesignSystem(
   brandId: string
 ): Promise<DesignSystem | null> {
-  const designDoc = await getDoc(doc(db, "designSystems", brandId));
+  const designDoc = await getDoc(doc(checkDbInit(), "designSystems", brandId));
   if (!designDoc.exists()) return null;
   return { brandId, ...designDoc.data() } as DesignSystem;
 }
@@ -173,7 +178,7 @@ export async function updateDesignSystem(
   brandId: string,
   data: Partial<Omit<DesignSystem, "brandId">>
 ): Promise<void> {
-  const docRef = doc(db, "designSystems", brandId);
+  const docRef = doc(checkDbInit(), "designSystems", brandId);
   const existingDoc = await getDoc(docRef);
 
   if (existingDoc.exists()) {
@@ -199,7 +204,7 @@ export async function createCreative(
   metadata: Creative["metadata"],
   imageUrl?: string
 ): Promise<string> {
-  const creativeRef = await addDoc(collection(db, "creatives"), {
+  const creativeRef = await addDoc(collection(checkDbInit(), "creatives"), {
     brandId,
     type,
     prompt,
@@ -214,14 +219,14 @@ export async function createCreative(
 }
 
 export async function getCreative(creativeId: string): Promise<Creative | null> {
-  const creativeDoc = await getDoc(doc(db, "creatives", creativeId));
+  const creativeDoc = await getDoc(doc(checkDbInit(), "creatives", creativeId));
   if (!creativeDoc.exists()) return null;
   return { id: creativeDoc.id, ...creativeDoc.data() } as Creative;
 }
 
 export async function getBrandCreatives(brandId: string): Promise<Creative[]> {
   const creativesQuery = query(
-    collection(db, "creatives"),
+    collection(checkDbInit(), "creatives"),
     where("brandId", "==", brandId),
     orderBy("createdAt", "desc")
   );
@@ -233,9 +238,9 @@ export async function updateCreative(
   creativeId: string,
   data: Partial<Omit<Creative, "id" | "createdAt" | "brandId" | "createdBy">>
 ): Promise<void> {
-  await updateDoc(doc(db, "creatives", creativeId), data);
+  await updateDoc(doc(checkDbInit(), "creatives", creativeId), data);
 }
 
 export async function deleteCreative(creativeId: string): Promise<void> {
-  await deleteDoc(doc(db, "creatives", creativeId));
+  await deleteDoc(doc(checkDbInit(), "creatives", creativeId));
 }

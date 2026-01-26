@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import {
   FolderOpen,
@@ -28,8 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuthContext } from "@/components/providers";
-import { useBrands } from "@/hooks/useBrands";
+import { useAuthContext, useBrandsContext } from "@/components/providers";
 
 // このデータは後で実際のデータと統合します
 const stats = [
@@ -133,13 +131,7 @@ const recentCreatives = [
 
 export function DashboardContent() {
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading, fetchBrands } = useBrands();
-
-  useEffect(() => {
-    if (firebaseUser) {
-      fetchBrands(firebaseUser.uid);
-    }
-  }, [firebaseUser, fetchBrands]);
+  const { brands, loading: brandsLoading } = useBrandsContext();
 
   const updatedStats = [
     {

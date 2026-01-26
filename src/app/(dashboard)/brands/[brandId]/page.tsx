@@ -3,7 +3,7 @@
 import { useEffect, use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useBrands } from "@/hooks/useBrands";
+import { useBrandsContext } from "@/components/providers";
 import { useAssets } from "@/hooks/useAssets";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +38,7 @@ interface BrandDetailPageProps {
 export default function BrandDetailPage({ params }: BrandDetailPageProps) {
   const { brandId } = use(params);
   const router = useRouter();
-  const { currentBrand, loading: brandLoading, selectBrand } = useBrands();
+  const { currentBrand, loading: brandLoading, selectBrand } = useBrandsContext();
   const { assets, loading: assetsLoading, fetchAssets } = useAssets();
 
   useEffect(() => {
@@ -82,18 +82,18 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-7 w-7 text-primary" />
+          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{currentBrand.name}</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-semibold text-foreground">{currentBrand.name}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {currentBrand.description || "説明なし"}
             </p>
           </div>
@@ -111,84 +111,102 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">資産数</CardTitle>
-                <FolderOpen className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {assetsLoading ? "-" : assets.length}
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">資産数</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">
+                      {assetsLoading ? "-" : assets.length}
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  デザインシステム
-                </CardTitle>
-                <Palette className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">未設定</div>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">デザインシステム</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">未設定</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                    <Palette className="h-5 w-5" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  クリエイティブ
-                </CardTitle>
-                <Wand2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">-</div>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">クリエイティブ</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">-</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-600">
+                    <Wand2 className="h-5 w-5" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>クイックアクション</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base font-medium">クイックアクション</CardTitle>
                 <CardDescription>
                   このブランドでよく使う機能
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`/assets?brandId=${brandId}`}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    資産をアップロード
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`/design-system?brandId=${brandId}`}>
-                    <Palette className="mr-2 h-4 w-4" />
-                    デザインシステムを編集
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`/creatives?brandId=${brandId}`}>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    クリエイティブを生成
-                  </Link>
-                </Button>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-3">
+                  <Button variant="outline" className="h-auto py-3 justify-start bg-transparent" asChild>
+                    <Link href={`/assets?brandId=${brandId}`}>
+                      <div className="p-2 rounded-lg bg-emerald-500/10 mr-3">
+                        <Upload className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      <span className="text-sm">資産をアップロード</span>
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="h-auto py-3 justify-start bg-transparent" asChild>
+                    <Link href={`/design-system?brandId=${brandId}`}>
+                      <div className="p-2 rounded-lg bg-primary/10 mr-3">
+                        <Palette className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-sm">デザインシステムを編集</span>
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="h-auto py-3 justify-start bg-transparent" asChild>
+                    <Link href={`/creatives?brandId=${brandId}`}>
+                      <div className="p-2 rounded-lg bg-amber-500/10 mr-3">
+                        <Wand2 className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <span className="text-sm">クリエイティブを生成</span>
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>ブランド設定</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base font-medium">ブランド設定</CardTitle>
                 <CardDescription>
                   ブランドの基本情報を管理
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full justify-start" asChild>
+                <Button variant="outline" className="h-auto py-3 justify-start w-full bg-transparent" asChild>
                   <Link href={`/brands/${brandId}/settings`}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    設定を開く
+                    <div className="p-2 rounded-lg bg-muted mr-3">
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm">設定を開く</span>
                   </Link>
                 </Button>
               </CardContent>
@@ -198,21 +216,19 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
 
         <TabsContent value="assets">
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>ブランド資産</CardTitle>
-                  <CardDescription>
-                    アップロードされた資産を管理します
-                  </CardDescription>
-                </div>
-                <Button asChild>
-                  <Link href={`/assets?brandId=${brandId}`}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    アップロード
-                  </Link>
-                </Button>
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <div>
+                <CardTitle className="text-base font-medium">ブランド資産</CardTitle>
+                <CardDescription>
+                  アップロードされた資産を管理します
+                </CardDescription>
               </div>
+              <Button asChild>
+                <Link href={`/assets?brandId=${brandId}`}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  アップロード
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {assetsLoading ? (
@@ -253,8 +269,8 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
 
         <TabsContent value="design-system">
           <Card>
-            <CardHeader>
-              <CardTitle>デザインシステム</CardTitle>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-medium">デザインシステム</CardTitle>
               <CardDescription>
                 ブランドのデザインシステムを管理します
               </CardDescription>

@@ -7,11 +7,18 @@ import {
 } from "firebase/storage";
 import { storage } from "./config";
 
+function checkStorageInit() {
+  if (!storage) {
+    throw new Error("Firebase Storage is not initialized. Please check your environment variables.");
+  }
+  return storage;
+}
+
 export async function uploadFile(
   file: File,
   path: string
 ): Promise<{ storagePath: string; downloadUrl: string }> {
-  const storageRef = ref(storage, path);
+  const storageRef = ref(checkStorageInit(), path);
   await uploadBytes(storageRef, file);
   const downloadUrl = await getDownloadURL(storageRef);
   return { storagePath: path, downloadUrl };
@@ -42,24 +49,24 @@ export async function uploadCreativeImage(
   imageData: Blob
 ): Promise<{ storagePath: string; downloadUrl: string }> {
   const path = `brands/${brandId}/creatives/${creativeId}.png`;
-  const storageRef = ref(storage, path);
+  const storageRef = ref(checkStorageInit(), path);
   await uploadBytes(storageRef, imageData);
   const downloadUrl = await getDownloadURL(storageRef);
   return { storagePath: path, downloadUrl };
 }
 
 export async function deleteFile(path: string): Promise<void> {
-  const storageRef = ref(storage, path);
+  const storageRef = ref(checkStorageInit(), path);
   await deleteObject(storageRef);
 }
 
 export async function getFileUrl(path: string): Promise<string> {
-  const storageRef = ref(storage, path);
+  const storageRef = ref(checkStorageInit(), path);
   return getDownloadURL(storageRef);
 }
 
 export async function listBrandAssets(brandId: string): Promise<string[]> {
-  const listRef = ref(storage, `brands/${brandId}/assets`);
+  const listRef = ref(checkStorageInit(), `brands/${brandId}/assets`);
   const result = await listAll(listRef);
   return result.items.map((item) => item.fullPath);
 }
