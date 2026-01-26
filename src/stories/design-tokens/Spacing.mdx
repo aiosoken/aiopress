@@ -1,0 +1,78 @@
+{/* Spacing.mdx */}
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design Tokens/Spacing" />
+
+# Spacing
+
+AIOPressで使用されるスペーシングの設定です。Tailwind CSSのデフォルトスペーシングスケールを使用しています。
+
+## Spacing Scale
+
+| Class | Size |
+|-------|------|
+| `0` | 0px |
+| `0.5` | 0.125rem (2px) |
+| `1` | 0.25rem (4px) |
+| `1.5` | 0.375rem (6px) |
+| `2` | 0.5rem (8px) |
+| `2.5` | 0.625rem (10px) |
+| `3` | 0.75rem (12px) |
+| `4` | 1rem (16px) |
+| `5` | 1.25rem (20px) |
+| `6` | 1.5rem (24px) |
+| `8` | 2rem (32px) |
+| `10` | 2.5rem (40px) |
+| `12` | 3rem (48px) |
+| `16` | 4rem (64px) |
+| `20` | 5rem (80px) |
+| `24` | 6rem (96px) |
+
+## Border Radius
+
+カスタムボーダー半径の設定:
+
+| Variable | Value |
+|----------|-------|
+| `--radius` | 0.625rem (10px) |
+| `--radius-sm` | calc(var(--radius) - 4px) |
+| `--radius-md` | calc(var(--radius) - 2px) |
+| `--radius-lg` | var(--radius) |
+| `--radius-xl` | calc(var(--radius) + 4px) |
+| `--radius-2xl` | calc(var(--radius) + 8px) |
+| `--radius-3xl` | calc(var(--radius) + 12px) |
+| `--radius-4xl` | calc(var(--radius) + 16px) |
+
+## Usage Examples
+
+### Padding
+
+```jsx
+<div className="p-4">Padding all sides</div>
+<div className="px-6 py-4">Horizontal and vertical padding</div>
+<div className="pt-2 pb-4">Top and bottom padding</div>
+```
+
+### Margin
+
+```jsx
+<div className="m-4">Margin all sides</div>
+<div className="mx-auto">Center horizontally</div>
+<div className="mt-8 mb-4">Top and bottom margin</div>
+```
+
+### Gap (Flexbox/Grid)
+
+```jsx
+<div className="flex gap-4">Flex with gap</div>
+<div className="grid gap-6">Grid with gap</div>
+```
+
+### Border Radius
+
+```jsx
+<div className="rounded-sm">Small radius</div>
+<div className="rounded-md">Medium radius</div>
+<div className="rounded-lg">Large radius</div>
+<div className="rounded-xl">Extra large radius</div>
+```
