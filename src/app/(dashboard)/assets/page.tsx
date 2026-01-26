@@ -285,14 +285,50 @@ export default function AssetsPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                {asset.analysis && (
+                {asset.status === "processing" && (
                   <div className="mt-4 rounded-lg bg-muted p-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      AI分析結果
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <p className="text-xs text-muted-foreground">
+                        分析中...
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {asset.status === "failed" && (
+                  <div className="mt-4 rounded-lg bg-destructive/10 p-3">
+                    <p className="text-xs text-destructive">
+                      分析に失敗しました
                     </p>
-                    <p className="text-sm line-clamp-2">
-                      {asset.analysis.description}
-                    </p>
+                  </div>
+                )}
+                {asset.analysis && asset.status === "completed" && (
+                  <div className="mt-4 space-y-2">
+                    <div className="rounded-lg bg-muted p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        AI分析結果
+                      </p>
+                      <p className="text-sm line-clamp-2">
+                        {asset.analysis.description}
+                      </p>
+                    </div>
+                    {asset.analysis.keywords && asset.analysis.keywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {asset.analysis.keywords.slice(0, 5).map((keyword, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {asset.analysis.tone && (
+                      <p className="text-xs text-muted-foreground">
+                        トーン: {asset.analysis.tone}
+                      </p>
+                    )}
                   </div>
                 )}
               </CardContent>

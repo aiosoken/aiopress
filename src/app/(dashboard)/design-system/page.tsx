@@ -23,34 +23,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Palette, Plus, X, Save } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Palette, Plus, X, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-
-interface DesignSystemData {
-  colors: Array<{ name: string; value: string }>;
-  typography: {
-    headingFont: string;
-    bodyFont: string;
-  };
-  voiceTone: string;
-  keywords: string[];
-  brandValues: string[];
-}
-
-const defaultDesignSystem: DesignSystemData = {
-  colors: [
-    { name: "プライマリ", value: "#3b82f6" },
-    { name: "セカンダリ", value: "#64748b" },
-    { name: "アクセント", value: "#f59e0b" },
-  ],
-  typography: {
-    headingFont: "Noto Sans JP",
-    bodyFont: "Noto Sans JP",
-  },
-  voiceTone: "",
-  keywords: [],
-  brandValues: [],
-};
+import { getDesignSystem, updateDesignSystem } from "@/lib/firebase/firestore";
+import { updateDesignSystemFunction, suggestKeywordsFunction } from "@/lib/firebase/functions";
+import type { DesignSystem } from "@/types";
 
 export default function DesignSystemPage() {
   const searchParams = useSearchParams();
@@ -58,10 +44,34 @@ export default function DesignSystemPage() {
   const { firebaseUser } = useAuthContext();
   const { brands, loading: brandsLoading, fetchBrands } = useBrands();
   const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
-  const [designSystem, setDesignSystem] = useState<DesignSystemData>(defaultDesignSystem);
+  const [designSystem, setDesignSystem] = useState<Partial<DesignSystem>>({
+    colors: {
+      primary: "#3b82f6",
+      secondary: "#64748b",
+      accent: "#f59e0b",
+      background: "#ffffff",
+      text: "#000000",
+    },
+    typography: {
+      fontFamily: "Noto Sans JP",
+      baseSize: 16,
+      scale: 1.25,
+    },
+    voiceTone: {
+      formality: "neutral",
+      enthusiasm: "medium",
+      empathy: "medium",
+    },
+    keywords: [],
+    brandValues: [],
+    targetAudience: "",
+  });
   const [newKeyword, setNewKeyword] = useState("");
   const [newValue, setNewValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuggestingKeywords, setIsSuggestingKeywords] = useState(false);
+  const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
 
   useEffect(() => {
     if (firebaseUser) {
@@ -75,26 +85,66 @@ export default function DesignSystemPage() {
     }
   }, [brandIdParam]);
 
-  const handleAddColor = () => {
-    setDesignSystem((prev) => ({
-      ...prev,
-      colors: [...prev.colors, { name: `カラー${prev.colors.length + 1}`, value: "#000000" }],
-    }));
+  useEffect(() => {
+    if (selectedBrandId) {
+      loadDesignSystem();
+    }
+  }, [selectedBrandId]);
+
+  const loadDesignSystem = async () => {
+    if (!selectedBrandId) return;
+    setIsLoading(true);
+    try {
+      const system = await getDesignSystem(selectedBrandId);
+      if (system) {
+        setDesignSystem({
+          colors: system.colors,
+          typography: system.typography,
+          voiceTone: system.voiceTone,
+          keywords: system.keywords || [],
+          brandValues: system.brandValues || [],
+          targetAudience: system.targetAudience || "",
+        });
+      } else {
+        // デフォルト値を使用
+        setDesignSystem({
+          colors: {
+            primary: "#3b82f6",
+            secondary: "#64748b",
+            accent: "#f59e0b",
+            background: "#ffffff",
+            text: "#000000",
+          },
+          typography: {
+            fontFamily: "Noto Sans JP",
+            baseSize: 16,
+            scale: 1.25,
+          },
+          voiceTone: {
+            formality: "neutral",
+            enthusiasm: "medium",
+            empathy: "medium",
+          },
+          keywords: [],
+          brandValues: [],
+          targetAudience: "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load design system:", error);
+      toast.error("デザインシステムの読み込みに失敗しました");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRemoveColor = (index: number) => {
+  const handleColorChange = (field: keyof DesignSystem["colors"], value: string) => {
     setDesignSystem((prev) => ({
       ...prev,
-      colors: prev.colors.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleColorChange = (index: number, field: "name" | "value", value: string) => {
-    setDesignSystem((prev) => ({
-      ...prev,
-      colors: prev.colors.map((color, i) =>
-        i === index ? { ...color, [field]: value } : color
-      ),
+      colors: {
+        ...prev.colors!,
+        [field]: value,
+      },
     }));
   };
 
@@ -137,12 +187,45 @@ export default function DesignSystemPage() {
 
     setIsSaving(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateDesignSystemFunction({
+        brandId: selectedBrandId,
+        designSystem: {
+          colors: designSystem.colors,
+          typography: designSystem.typography,
+          voiceTone: designSystem.voiceTone,
+          keywords: designSystem.keywords,
+          brandValues: designSystem.brandValues,
+          targetAudience: designSystem.targetAudience,
+        },
+      });
       toast.success("デザインシステムを保存しました");
-    } catch (error) {
-      toast.error("保存に失敗しました");
+    } catch (error: any) {
+      console.error("Failed to save design system:", error);
+      toast.error(error.message || "保存に失敗しました");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSuggestKeywords = async () => {
+    if (!selectedBrandId) return;
+
+    setIsSuggestingKeywords(true);
+    try {
+      const result = await suggestKeywordsFunction({ brandId: selectedBrandId });
+      if (result.data.success && result.data.keywords) {
+        setDesignSystem((prev) => ({
+          ...prev,
+          keywords: result.data.keywords || prev.keywords,
+        }));
+        toast.success(`${result.data.keywords.length}個のキーワードを提案しました`);
+        setIsKeywordDialogOpen(false);
+      }
+    } catch (error: any) {
+      console.error("Failed to suggest keywords:", error);
+      toast.error(error.message || "キーワードの提案に失敗しました");
+    } finally {
+      setIsSuggestingKeywords(false);
     }
   };
 
@@ -200,6 +283,10 @@ export default function DesignSystemPage() {
             </p>
           </CardContent>
         </Card>
+      ) : isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
@@ -210,39 +297,88 @@ export default function DesignSystemPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {designSystem.colors.map((color, index) => (
-                <div key={index} className="flex items-center gap-3">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
                   <input
                     type="color"
-                    value={color.value}
-                    onChange={(e) => handleColorChange(index, "value", e.target.value)}
+                    value={designSystem.colors?.primary || "#3b82f6"}
+                    onChange={(e) => handleColorChange("primary", e.target.value)}
                     className="h-10 w-10 rounded border cursor-pointer"
                   />
-                  <Input
-                    value={color.name}
-                    onChange={(e) => handleColorChange(index, "name", e.target.value)}
-                    placeholder="カラー名"
-                    className="flex-1"
-                  />
-                  <Input
-                    value={color.value}
-                    onChange={(e) => handleColorChange(index, "value", e.target.value)}
-                    placeholder="#000000"
-                    className="w-28"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveColor(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <div className="flex-1">
+                    <Label>プライマリ</Label>
+                    <Input
+                      value={designSystem.colors?.primary || "#3b82f6"}
+                      onChange={(e) => handleColorChange("primary", e.target.value)}
+                      placeholder="#3b82f6"
+                    />
+                  </div>
                 </div>
-              ))}
-              <Button variant="outline" onClick={handleAddColor} className="w-full">
-                <Plus className="mr-2 h-4 w-4" />
-                カラーを追加
-              </Button>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={designSystem.colors?.secondary || "#64748b"}
+                    onChange={(e) => handleColorChange("secondary", e.target.value)}
+                    className="h-10 w-10 rounded border cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <Label>セカンダリ</Label>
+                    <Input
+                      value={designSystem.colors?.secondary || "#64748b"}
+                      onChange={(e) => handleColorChange("secondary", e.target.value)}
+                      placeholder="#64748b"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={designSystem.colors?.accent || "#f59e0b"}
+                    onChange={(e) => handleColorChange("accent", e.target.value)}
+                    className="h-10 w-10 rounded border cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <Label>アクセント</Label>
+                    <Input
+                      value={designSystem.colors?.accent || "#f59e0b"}
+                      onChange={(e) => handleColorChange("accent", e.target.value)}
+                      placeholder="#f59e0b"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={designSystem.colors?.background || "#ffffff"}
+                    onChange={(e) => handleColorChange("background", e.target.value)}
+                    className="h-10 w-10 rounded border cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <Label>背景</Label>
+                    <Input
+                      value={designSystem.colors?.background || "#ffffff"}
+                      onChange={(e) => handleColorChange("background", e.target.value)}
+                      placeholder="#ffffff"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={designSystem.colors?.text || "#000000"}
+                    onChange={(e) => handleColorChange("text", e.target.value)}
+                    className="h-10 w-10 rounded border cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <Label>テキスト</Label>
+                    <Input
+                      value={designSystem.colors?.text || "#000000"}
+                      onChange={(e) => handleColorChange("text", e.target.value)}
+                      placeholder="#000000"
+                    />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -255,13 +391,16 @@ export default function DesignSystemPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>見出しフォント</Label>
+                <Label>フォントファミリー</Label>
                 <Select
-                  value={designSystem.typography.headingFont}
+                  value={designSystem.typography?.fontFamily || "Noto Sans JP"}
                   onValueChange={(value) =>
                     setDesignSystem((prev) => ({
                       ...prev,
-                      typography: { ...prev.typography, headingFont: value },
+                      typography: {
+                        ...prev.typography!,
+                        fontFamily: value,
+                      },
                     }))
                   }
                 >
@@ -277,26 +416,37 @@ export default function DesignSystemPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>本文フォント</Label>
-                <Select
-                  value={designSystem.typography.bodyFont}
-                  onValueChange={(value) =>
+                <Label>ベースサイズ (px)</Label>
+                <Input
+                  type="number"
+                  value={designSystem.typography?.baseSize || 16}
+                  onChange={(e) =>
                     setDesignSystem((prev) => ({
                       ...prev,
-                      typography: { ...prev.typography, bodyFont: value },
+                      typography: {
+                        ...prev.typography!,
+                        baseSize: parseInt(e.target.value) || 16,
+                      },
                     }))
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Noto Sans JP">Noto Sans JP</SelectItem>
-                    <SelectItem value="Noto Serif JP">Noto Serif JP</SelectItem>
-                    <SelectItem value="M PLUS 1p">M PLUS 1p</SelectItem>
-                    <SelectItem value="Kosugi Maru">Kosugi Maru</SelectItem>
-                  </SelectContent>
-                </Select>
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>スケール</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={designSystem.typography?.scale || 1.25}
+                  onChange={(e) =>
+                    setDesignSystem((prev) => ({
+                      ...prev,
+                      typography: {
+                        ...prev.typography!,
+                        scale: parseFloat(e.target.value) || 1.25,
+                      },
+                    }))
+                  }
+                />
               </div>
             </CardContent>
           </Card>
@@ -308,24 +458,138 @@ export default function DesignSystemPage() {
                 ブランドの声のトーンを定義します
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Textarea
-                value={designSystem.voiceTone}
-                onChange={(e) =>
-                  setDesignSystem((prev) => ({ ...prev, voiceTone: e.target.value }))
-                }
-                placeholder="例: フレンドリーで親しみやすい、プロフェッショナルで信頼感のある、など"
-                rows={4}
-              />
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>フォーマリティ</Label>
+                <Select
+                  value={designSystem.voiceTone?.formality || "neutral"}
+                  onValueChange={(value: "formal" | "casual" | "neutral") =>
+                    setDesignSystem((prev) => ({
+                      ...prev,
+                      voiceTone: {
+                        ...prev.voiceTone!,
+                        formality: value,
+                      },
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="formal">フォーマル</SelectItem>
+                    <SelectItem value="casual">カジュアル</SelectItem>
+                    <SelectItem value="neutral">ニュートラル</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>熱意</Label>
+                <Select
+                  value={designSystem.voiceTone?.enthusiasm || "medium"}
+                  onValueChange={(value: "high" | "medium" | "low") =>
+                    setDesignSystem((prev) => ({
+                      ...prev,
+                      voiceTone: {
+                        ...prev.voiceTone!,
+                        enthusiasm: value,
+                      },
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">高い</SelectItem>
+                    <SelectItem value="medium">中程度</SelectItem>
+                    <SelectItem value="low">低い</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>共感性</Label>
+                <Select
+                  value={designSystem.voiceTone?.empathy || "medium"}
+                  onValueChange={(value: "high" | "medium" | "low") =>
+                    setDesignSystem((prev) => ({
+                      ...prev,
+                      voiceTone: {
+                        ...prev.voiceTone!,
+                        empathy: value,
+                      },
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">高い</SelectItem>
+                    <SelectItem value="medium">中程度</SelectItem>
+                    <SelectItem value="low">低い</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>キーワード</CardTitle>
-              <CardDescription>
-                ブランドを表すキーワードを定義します
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>キーワード</CardTitle>
+                  <CardDescription>
+                    ブランドを表すキーワードを定義します
+                  </CardDescription>
+                </div>
+                <Dialog open={isKeywordDialogOpen} onOpenChange={setIsKeywordDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      AI提案
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>AIキーワード提案</DialogTitle>
+                      <DialogDescription>
+                        AIがブランド情報に基づいてキーワードを提案します
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <p className="text-sm text-muted-foreground">
+                        既存のキーワードと統合して、SEOとAIOに効果的なキーワードを提案します。
+                      </p>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsKeywordDialogOpen(false)}
+                        disabled={isSuggestingKeywords}
+                      >
+                        キャンセル
+                      </Button>
+                      <Button
+                        onClick={handleSuggestKeywords}
+                        disabled={isSuggestingKeywords}
+                      >
+                        {isSuggestingKeywords ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            提案中...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            キーワードを提案
+                          </>
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -338,7 +602,7 @@ export default function DesignSystemPage() {
                 <Button onClick={handleAddKeyword}>追加</Button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {designSystem.keywords.map((keyword) => (
+                {designSystem.keywords?.map((keyword) => (
                   <Badge key={keyword} variant="secondary" className="gap-1">
                     {keyword}
                     <button
@@ -371,7 +635,7 @@ export default function DesignSystemPage() {
                 <Button onClick={handleAddValue}>追加</Button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {designSystem.brandValues.map((value) => (
+                {designSystem.brandValues?.map((value) => (
                   <Badge key={value} variant="outline" className="gap-1">
                     {value}
                     <button
@@ -383,6 +647,28 @@ export default function DesignSystemPage() {
                   </Badge>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>ターゲットオーディエンス</CardTitle>
+              <CardDescription>
+                ブランドのターゲット層を定義します
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={designSystem.targetAudience || ""}
+                onChange={(e) =>
+                  setDesignSystem((prev) => ({
+                    ...prev,
+                    targetAudience: e.target.value,
+                  }))
+                }
+                placeholder="例: 20代から30代のビジネスパーソン、子育て中の母親など"
+                rows={3}
+              />
             </CardContent>
           </Card>
         </div>
