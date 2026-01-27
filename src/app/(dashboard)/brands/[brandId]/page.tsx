@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Building2,
   FolderOpen,
@@ -27,12 +28,60 @@ import {
   Sparkles,
   Twitter,
   FileText,
+  Type,
+  MessageSquare,
+  Tag,
+  Heart,
+  Users,
 } from "lucide-react";
-import { getBrandCreatives } from "@/lib/firebase/firestore";
-import type { Creative, CreativeType } from "@/types";
+import { getBrandCreatives, getDesignSystem } from "@/lib/firebase/firestore";
+import type { Creative, CreativeType, DesignSystem } from "@/types";
 
 interface BrandDetailPageProps {
   params: Promise<{ brandId: string }>;
+}
+
+function calculateDesignSystemProgress(ds: DesignSystem | null): number {
+  if (!ds) return 0;
+
+  let progress = 0;
+
+  if (ds.colors) {
+    const colorFields = ["primary", "secondary", "accent", "background", "text"];
+    const filledColors = colorFields.filter(
+      (f) => ds.colors[f as keyof typeof ds.colors] && ds.colors[f as keyof typeof ds.colors] !== "#000000"
+    ).length;
+    progress += (filledColors / colorFields.length) * 20;
+  }
+
+  if (ds.typography) {
+    const hasFont = ds.typography.fontFamily && ds.typography.fontFamily !== "";
+    const hasSize = ds.typography.baseSize && ds.typography.baseSize > 0;
+    const hasScale = ds.typography.scale && ds.typography.scale > 0;
+    progress += ((hasFont ? 1 : 0) + (hasSize ? 1 : 0) + (hasScale ? 1 : 0)) / 3 * 20;
+  }
+
+  if (ds.voiceTone) {
+    const toneFields = ["formality", "enthusiasm", "empathy"];
+    const filledTones = toneFields.filter(
+      (f) => ds.voiceTone[f as keyof typeof ds.voiceTone] && ds.voiceTone[f as keyof typeof ds.voiceTone] !== ""
+    ).length;
+    progress += (filledTones / toneFields.length) * 20;
+  }
+
+  if (ds.keywords && ds.keywords.length > 0) {
+    progress += Math.min(ds.keywords.length / 10, 1) * 20;
+  }
+
+  if (ds.brandValues && ds.brandValues.length > 0) {
+    progress += Math.min(ds.brandValues.length / 5, 1) * 10;
+  }
+
+  if (ds.targetAudience && ds.targetAudience.trim() !== "") {
+    progress += 10;
+  }
+
+  return Math.round(progress);
 }
 
 export default function BrandDetailPage({ params }: BrandDetailPageProps) {
@@ -40,13 +89,41 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
   const router = useRouter();
   const { currentBrand, loading: brandLoading, selectBrand } = useBrandsContext();
   const { assets, loading: assetsLoading, fetchAssets } = useAssets();
+  const [designSystem, setDesignSystem] = useState<DesignSystem | null>(null);
+  const [designSystemLoading, setDesignSystemLoading] = useState(false);
+  const [creativesCount, setCreativesCount] = useState<number>(0);
 
   useEffect(() => {
     if (brandId) {
       selectBrand(brandId);
       fetchAssets(brandId);
+      loadDesignSystem();
+      loadCreativesCount();
     }
   }, [brandId, selectBrand, fetchAssets]);
+
+  const loadDesignSystem = async () => {
+    setDesignSystemLoading(true);
+    try {
+      const ds = await getDesignSystem(brandId);
+      setDesignSystem(ds);
+    } catch (error) {
+      console.error("Failed to fetch design system:", error);
+    } finally {
+      setDesignSystemLoading(false);
+    }
+  };
+
+  const loadCreativesCount = async () => {
+    try {
+      const creatives = await getBrandCreatives(brandId);
+      setCreativesCount(creatives.length);
+    } catch (error) {
+      console.error("Failed to fetch creatives count:", error);
+    }
+  };
+
+  const dsProgress = calculateDesignSystemProgress(designSystem);
 
   if (brandLoading) {
     return (
@@ -131,7 +208,9 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">デザインシステム</p>
-                    <p className="text-2xl font-semibold text-foreground mt-1">未設定</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">
+                      {designSystemLoading ? "-" : `${dsProgress}%`}
+                    </p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
                     <Palette className="h-5 w-5" />
@@ -145,7 +224,7 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">クリエイティブ</p>
-                    <p className="text-2xl font-semibold text-foreground mt-1">-</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">{creativesCount}</p>
                   </div>
                   <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-600">
                     <Wand2 className="h-5 w-5" />
@@ -269,25 +348,170 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
 
         <TabsContent value="design-system">
           <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base font-medium">デザインシステム</CardTitle>
-              <CardDescription>
-                ブランドのデザインシステムを管理します
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <div>
+                <CardTitle className="text-base font-medium">デザインシステム</CardTitle>
+                <CardDescription>
+                  ブランドのデザインシステムを管理します
+                </CardDescription>
+              </div>
+              <Button asChild>
+                <Link href={`/design-system?brandId=${brandId}`}>
+                  <Palette className="mr-2 h-4 w-4" />
+                  編集
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Palette className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-4 text-sm text-muted-foreground">
-                  デザインシステムはまだ設定されていません
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href={`/design-system?brandId=${brandId}`}>
-                    <Palette className="mr-2 h-4 w-4" />
-                    デザインシステムを設定
-                  </Link>
-                </Button>
-              </div>
+              {designSystemLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              ) : !designSystem || dsProgress === 0 ? (
+                <div className="text-center py-8">
+                  <Palette className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    デザインシステムはまだ設定されていません
+                  </p>
+                  <Button className="mt-4" asChild>
+                    <Link href={`/design-system?brandId=${brandId}`}>
+                      <Palette className="mr-2 h-4 w-4" />
+                      デザインシステムを設定
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">設定の完了度</span>
+                      <span className="font-medium">{dsProgress}%</span>
+                    </div>
+                    <Progress value={dsProgress} className="h-2" />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {designSystem.colors && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Palette className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">カラーパレット</span>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {designSystem.colors.primary && (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-6 w-6 rounded border"
+                                style={{ backgroundColor: designSystem.colors.primary }}
+                              />
+                              <span className="text-xs text-muted-foreground">Primary</span>
+                            </div>
+                          )}
+                          {designSystem.colors.secondary && (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-6 w-6 rounded border"
+                                style={{ backgroundColor: designSystem.colors.secondary }}
+                              />
+                              <span className="text-xs text-muted-foreground">Secondary</span>
+                            </div>
+                          )}
+                          {designSystem.colors.accent && (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-6 w-6 rounded border"
+                                style={{ backgroundColor: designSystem.colors.accent }}
+                              />
+                              <span className="text-xs text-muted-foreground">Accent</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {designSystem.typography && designSystem.typography.fontFamily && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Type className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">タイポグラフィ</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          <p>フォント: {designSystem.typography.fontFamily}</p>
+                          {designSystem.typography.baseSize && (
+                            <p>基本サイズ: {designSystem.typography.baseSize}px</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {designSystem.voiceTone && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">トーン&マナー</span>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {designSystem.voiceTone.formality && (
+                            <Badge variant="secondary">{designSystem.voiceTone.formality}</Badge>
+                          )}
+                          {designSystem.voiceTone.enthusiasm && (
+                            <Badge variant="secondary">{designSystem.voiceTone.enthusiasm}</Badge>
+                          )}
+                          {designSystem.voiceTone.empathy && (
+                            <Badge variant="secondary">{designSystem.voiceTone.empathy}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {designSystem.keywords && designSystem.keywords.length > 0 && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">キーワード</span>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {designSystem.keywords.slice(0, 5).map((keyword, i) => (
+                            <Badge key={i} variant="outline">{keyword}</Badge>
+                          ))}
+                          {designSystem.keywords.length > 5 && (
+                            <Badge variant="outline">+{designSystem.keywords.length - 5}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {designSystem.brandValues && designSystem.brandValues.length > 0 && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Heart className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">ブランドバリュー</span>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {designSystem.brandValues.slice(0, 3).map((value, i) => (
+                            <Badge key={i} variant="outline">{value}</Badge>
+                          ))}
+                          {designSystem.brandValues.length > 3 && (
+                            <Badge variant="outline">+{designSystem.brandValues.length - 3}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {designSystem.targetAudience && (
+                      <div className="rounded-lg border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">ターゲットオーディエンス</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {designSystem.targetAudience}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

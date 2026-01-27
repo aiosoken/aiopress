@@ -274,3 +274,64 @@ export async function updateCreative(
 export async function deleteCreative(creativeId: string): Promise<void> {
   await deleteDoc(doc(checkDbInit(), "creatives", creativeId));
 }
+
+export async function getAllUserAssets(brandIds: string[]): Promise<Asset[]> {
+  if (brandIds.length === 0) return [];
+  
+  const allAssets: Asset[] = [];
+  const chunks = [];
+  for (let i = 0; i < brandIds.length; i += 10) {
+    chunks.push(brandIds.slice(i, i + 10));
+  }
+
+  for (const chunk of chunks) {
+    const assetsQuery = query(
+      collection(checkDbInit(), "assets"),
+      where("brandId", "in", chunk)
+    );
+    const snapshot = await getDocs(assetsQuery);
+    snapshot.docs.forEach((doc) => {
+      allAssets.push({ id: doc.id, ...doc.data() } as Asset);
+    });
+  }
+
+  return allAssets;
+}
+
+export async function getAllUserCreatives(brandIds: string[]): Promise<Creative[]> {
+  if (brandIds.length === 0) return [];
+  
+  const allCreatives: Creative[] = [];
+  const chunks = [];
+  for (let i = 0; i < brandIds.length; i += 10) {
+    chunks.push(brandIds.slice(i, i + 10));
+  }
+
+  for (const chunk of chunks) {
+    const creativesQuery = query(
+      collection(checkDbInit(), "creatives"),
+      where("brandId", "in", chunk)
+    );
+    const snapshot = await getDocs(creativesQuery);
+    snapshot.docs.forEach((doc) => {
+      allCreatives.push({ id: doc.id, ...doc.data() } as Creative);
+    });
+  }
+
+  return allCreatives;
+}
+
+export async function getAllUserDesignSystems(brandIds: string[]): Promise<DesignSystem[]> {
+  if (brandIds.length === 0) return [];
+  
+  const designSystems: DesignSystem[] = [];
+  
+  for (const brandId of brandIds) {
+    const designDoc = await getDoc(doc(checkDbInit(), "designSystems", brandId));
+    if (designDoc.exists()) {
+      designSystems.push({ brandId, ...designDoc.data() } as DesignSystem);
+    }
+  }
+
+  return designSystems;
+}
