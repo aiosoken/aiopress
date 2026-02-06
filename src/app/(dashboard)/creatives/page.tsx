@@ -44,7 +44,11 @@ import {
   MessageSquare,
   Download,
   Clock,
-  Filter,
+  Search,
+  ArrowUpDown,
+  Globe,
+  Archive,
+  FileEdit,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { CreativeType, Creative } from "@/types";
@@ -65,6 +69,8 @@ export default function CreativesPage() {
   const [creatives, setCreatives] = useState<Creative[]>([]);
   const [loading, setLoading] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score">("newest");
 
   useEffect(() => {
     if (brandIdParam) {
@@ -158,6 +164,22 @@ export default function CreativesPage() {
     }
   };
 
+  const changeStatus = async (creative: Creative, newStatus: Creative["status"]) => {
+    try {
+      await updateCreative(creative.id, { status: newStatus } as any);
+      setCreatives((prev) =>
+        prev.map((c) =>
+          c.id === creative.id ? { ...c, status: newStatus } : c
+        )
+      );
+      const labels = { DRAFT: "下書き", PUBLISHED: "公開", ARCHIVED: "アーカイブ" };
+      toast.success(`${labels[newStatus]}に変更しました`);
+    } catch (error) {
+      console.error("Failed to change status:", error);
+      toast.error("ステータス変更に失敗しました");
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("クリップボードにコピーしました");
@@ -210,6 +232,25 @@ export default function CreativesPage() {
     if (showFavoritesOnly) {
       filtered = filtered.filter((c) => c.isFavorite);
     }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.content.toLowerCase().includes(q) ||
+          c.prompt?.toLowerCase().includes(q) ||
+          c.metadata?.brandFitFeedback?.toLowerCase().includes(q)
+      );
+    }
+    filtered = [...filtered].sort((a, b) => {
+      if (sortOrder === "score") {
+        return (b.metadata?.brandFitScore ?? 0) - (a.metadata?.brandFitScore ?? 0);
+      }
+      const aTime = a.createdAt?.toDate?.() ?? new Date(a.createdAt as any);
+      const bTime = b.createdAt?.toDate?.() ?? new Date(b.createdAt as any);
+      return sortOrder === "newest"
+        ? bTime.getTime() - aTime.getTime()
+        : aTime.getTime() - bTime.getTime();
+    });
     return filtered;
   };
 
@@ -224,6 +265,16 @@ export default function CreativesPage() {
             <Badge variant="secondary">
               {getTypeLabel(creative.type)}
             </Badge>
+            {creative.status === "PUBLISHED" && (
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200" variant="outline">
+                <Globe className="mr-1 h-3 w-3" />公開中
+              </Badge>
+            )}
+            {creative.status === "ARCHIVED" && (
+              <Badge className="bg-muted text-muted-foreground" variant="outline">
+                <Archive className="mr-1 h-3 w-3" />アーカイブ
+              </Badge>
+            )}
             {creative.metadata?.brandFitScore != null && (
               <Badge
                 variant="outline"
@@ -240,6 +291,39 @@ export default function CreativesPage() {
             )}
           </div>
           <div className="flex items-center gap-1">
+            {creative.status !== "PUBLISHED" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-emerald-600"
+                title="公開する"
+                onClick={() => changeStatus(creative, "PUBLISHED")}
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            )}
+            {creative.status === "PUBLISHED" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                title="下書きに戻す"
+                onClick={() => changeStatus(creative, "DRAFT")}
+              >
+                <FileEdit className="h-4 w-4" />
+              </Button>
+            )}
+            {creative.status !== "ARCHIVED" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground"
+                title="アーカイブ"
+                onClick={() => changeStatus(creative, "ARCHIVED")}
+              >
+                <Archive className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -491,7 +575,7 @@ export default function CreativesPage() {
             クリエイティブを生成するブランドを選択してください
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <div className="flex items-center gap-4">
             <Select
               value={selectedBrandId}
@@ -520,6 +604,30 @@ export default function CreativesPage() {
               </Button>
             )}
           </div>
+          {selectedBrandId && (
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="テーマ・内容で検索..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as typeof sortOrder)}>
+                <SelectTrigger className="w-[160px]">
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">新しい順</SelectItem>
+                  <SelectItem value="oldest">古い順</SelectItem>
+                  <SelectItem value="score">スコア順</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </CardContent>
       </Card>
 

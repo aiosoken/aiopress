@@ -127,6 +127,29 @@ export async function addBrandMember(
   return memberRef.id;
 }
 
+export async function updateBrandMemberRole(
+  memberId: string,
+  role: BrandRole
+): Promise<void> {
+  await updateDoc(doc(checkDbInit(), "brandMembers", memberId), { role });
+}
+
+export async function removeBrandMember(memberId: string): Promise<void> {
+  await deleteDoc(doc(checkDbInit(), "brandMembers", memberId));
+}
+
+export async function findUserByEmail(email: string): Promise<{ id: string; email: string; displayName: string | null } | null> {
+  const usersQuery = query(
+    collection(checkDbInit(), "users"),
+    where("email", "==", email)
+  );
+  const snapshot = await getDocs(usersQuery);
+  if (snapshot.empty) return null;
+  const userDoc = snapshot.docs[0];
+  const data = userDoc.data();
+  return { id: userDoc.id, email: data.email, displayName: data.displayName };
+}
+
 export async function createAsset(
   brandId: string,
   fileName: string,

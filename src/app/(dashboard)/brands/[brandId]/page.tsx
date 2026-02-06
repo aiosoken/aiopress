@@ -16,6 +16,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Building2,
   FolderOpen,
@@ -33,9 +41,25 @@ import {
   Tag,
   Heart,
   Users,
+  UserPlus,
+  Trash2,
+  Mail,
+  Crown,
+  Shield,
+  User,
 } from "lucide-react";
-import { getBrandCreatives, getDesignSystem } from "@/lib/firebase/firestore";
-import type { Creative, CreativeType, DesignSystem } from "@/types";
+import { toast } from "sonner";
+import { useAuthContext } from "@/components/providers";
+import {
+  getBrandCreatives,
+  getDesignSystem,
+  getBrandMembers,
+  addBrandMember,
+  updateBrandMemberRole,
+  removeBrandMember,
+  findUserByEmail,
+} from "@/lib/firebase/firestore";
+import type { Creative, CreativeType, DesignSystem, BrandMember, BrandRole } from "@/types";
 
 interface BrandDetailPageProps {
   params: Promise<{ brandId: string }>;
@@ -183,6 +207,7 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
           <TabsTrigger value="assets">資産</TabsTrigger>
           <TabsTrigger value="design-system">デザインシステム</TabsTrigger>
           <TabsTrigger value="creatives">クリエイティブ</TabsTrigger>
+          <TabsTrigger value="members">メンバー</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -519,6 +544,10 @@ export default function BrandDetailPage({ params }: BrandDetailPageProps) {
         <TabsContent value="creatives">
           <CreativesTab brandId={brandId} />
         </TabsContent>
+
+        <TabsContent value="members">
+          <MembersTab brandId={brandId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -658,6 +687,203 @@ function CreativesTab({ brandId }: { brandId: string }) {
                 </Link>
               </Button>
             )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MembersTab({ brandId }: { brandId: string }) {
+  const { firebaseUser } = useAuthContext();
+  const [members, setMembers] = useState<BrandMember[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<BrandRole>("MEMBER");
+  const [inviting, setInviting] = useState(false);
+
+  useEffect(() => {
+    loadMembers();
+  }, [brandId]);
+
+  const loadMembers = async () => {
+    setLoading(true);
+    try {
+      const fetched = await getBrandMembers(brandId);
+      setMembers(fetched);
+    } catch (error) {
+      console.error("Failed to fetch members:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviting(true);
+    try {
+      const user = await findUserByEmail(inviteEmail.trim());
+      if (!user) {
+        toast.error("ユーザーが見つかりません");
+        setInviting(false);
+        return;
+      }
+      if (members.some((m) => m.userId === user.id)) {
+        toast.error("既にメンバーです");
+        setInviting(false);
+        return;
+      }
+      await addBrandMember(brandId, user.id, inviteRole);
+      toast.success(`${user.displayName || user.email} を招待しました`);
+      setInviteEmail("");
+      await loadMembers();
+    } catch (error) {
+      console.error("Failed to invite member:", error);
+      toast.error("招待に失敗しました");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRoleChange = async (member: BrandMember, newRole: BrandRole) => {
+    try {
+      await updateBrandMemberRole(member.id, newRole);
+      setMembers((prev) =>
+        prev.map((m) => (m.id === member.id ? { ...m, role: newRole } : m))
+      );
+      toast.success("ロールを変更しました");
+    } catch (error) {
+      console.error("Failed to update role:", error);
+      toast.error("ロール変更に失敗しました");
+    }
+  };
+
+  const handleRemove = async (member: BrandMember) => {
+    try {
+      await removeBrandMember(member.id);
+      setMembers((prev) => prev.filter((m) => m.id !== member.id));
+      toast.success("メンバーを削除しました");
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+      toast.error("メンバー削除に失敗しました");
+    }
+  };
+
+  const getRoleIcon = (role: BrandRole) => {
+    switch (role) {
+      case "OWNER": return <Crown className="h-4 w-4 text-amber-500" />;
+      case "ADMIN": return <Shield className="h-4 w-4 text-blue-500" />;
+      default: return <User className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getRoleLabel = (role: BrandRole) => {
+    switch (role) {
+      case "OWNER": return "オーナー";
+      case "ADMIN": return "管理者";
+      default: return "メンバー";
+    }
+  };
+
+  const isOwner = members.some(
+    (m) => m.userId === firebaseUser?.uid && m.role === "OWNER"
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-medium">メンバー管理</CardTitle>
+            <CardDescription>
+              ブランドのメンバーとロールを管理します
+            </CardDescription>
+          </div>
+          <Badge variant="secondary">{members.length}人</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* 招待フォーム */}
+        {isOwner && (
+          <div className="flex items-end gap-3">
+            <div className="flex-1 space-y-1">
+              <label className="text-sm font-medium">メールアドレスで招待</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="user@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  type="email"
+                  onKeyDown={(e) => e.key === "Enter" && handleInvite()}
+                />
+                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as BrandRole)}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">管理者</SelectItem>
+                    <SelectItem value="MEMBER">メンバー</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={handleInvite} disabled={inviting || !inviteEmail.trim()}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {inviting ? "招待中..." : "招待"}
+            </Button>
+          </div>
+        )}
+
+        {/* メンバーリスト */}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : (
+          <div className="divide-y">
+            {members.map((member) => (
+              <div key={member.id} className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+                    {getRoleIcon(member.role)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{member.userId}</p>
+                    <p className="text-xs text-muted-foreground">{getRoleLabel(member.role)}</p>
+                  </div>
+                </div>
+                {isOwner && member.role !== "OWNER" && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={member.role}
+                      onValueChange={(v) => handleRoleChange(member, v as BrandRole)}
+                    >
+                      <SelectTrigger className="w-[110px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADMIN">管理者</SelectItem>
+                        <SelectItem value="MEMBER">メンバー</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={() => handleRemove(member)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                {member.role === "OWNER" && (
+                  <Badge variant="outline" className="text-amber-600 border-amber-200">
+                    <Crown className="mr-1 h-3 w-3" />
+                    オーナー
+                  </Badge>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
