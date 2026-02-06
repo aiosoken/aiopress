@@ -13,3 +13,6 @@ export { updateDesignSystem, suggestKeywords } from "./design-system";
 
 // ブランド情報自動抽出関数
 export { extractBrandFromFile, extractBrandFromUrl } from "./brand-extraction";
+
+// アカウント管理関数
+export { deleteAccount } from "./account";

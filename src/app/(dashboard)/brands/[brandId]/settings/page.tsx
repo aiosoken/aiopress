@@ -26,13 +26,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Building2,
   ArrowLeft,
   Save,
   Trash2,
   Loader2,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
+import { toast } from "sonner";
+import { uploadLogo } from "@/lib/firebase/storage";
+import { updateBrand } from "@/lib/firebase/firestore";
 
 interface BrandSettingsPageProps {
   params: Promise<{ brandId: string }>;
@@ -47,6 +53,8 @@ export default function BrandSettingsPage({ params }: BrandSettingsPageProps) {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (brandId) {
@@ -58,8 +66,30 @@ export default function BrandSettingsPage({ params }: BrandSettingsPageProps) {
     if (currentBrand) {
       setName(currentBrand.name);
       setDescription(currentBrand.description || "");
+      setLogoUrl(currentBrand.logoUrl || "");
     }
   }, [currentBrand]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ファイルサイズは5MB以下にしてください");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const { downloadUrl } = await uploadLogo(brandId, file);
+      await updateBrand(brandId, { logoUrl: downloadUrl } as any);
+      setLogoUrl(downloadUrl);
+      toast.success("ロゴをアップロードしました");
+    } catch (error) {
+      console.error("Failed to upload logo:", error);
+      toast.error("ロゴのアップロードに失敗しました");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -144,6 +174,51 @@ export default function BrandSettingsPage({ params }: BrandSettingsPageProps) {
       </div>
 
       <div className="grid gap-6 max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-medium">ブランドロゴ</CardTitle>
+            <CardDescription>
+              ブランドのロゴ画像をアップロードします
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              <Avatar className="h-20 w-20 rounded-lg">
+                <AvatarImage src={logoUrl || undefined} alt="Brand logo" className="object-cover" />
+                <AvatarFallback className="rounded-lg bg-primary/10">
+                  <ImageIcon className="h-8 w-8 text-primary" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-2">
+                <Button variant="outline" disabled={uploadingLogo} asChild>
+                  <label className="cursor-pointer">
+                    {uploadingLogo ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        アップロード中...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        ロゴを変更
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                  </label>
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG, WebP（最大5MB）
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-medium">基本情報</CardTitle>

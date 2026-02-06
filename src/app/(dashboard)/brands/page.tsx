@@ -214,19 +214,42 @@ export default function BrandsPage() {
                 />
               </div>
               <div className="border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setIsExtractionOpen(true)}
-                >
-                  <FileSearch className="mr-2 h-4 w-4" />
-                  素材からブランド情報を抽出
-                </Button>
-                {pendingExtraction && (
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    抽出済み（信頼度: {pendingExtraction.confidence}%）
-                  </p>
+                {pendingExtraction ? (
+                  <div className="flex items-center gap-3 rounded-lg bg-primary/5 border border-primary/20 p-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileSearch className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">ブランド情報を抽出済み</p>
+                      <p className="text-xs text-muted-foreground">
+                        作成時にデザインシステムに自動反映されます
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsExtractionOpen(true)}
+                    >
+                      変更
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="flex items-center gap-3 w-full rounded-lg border border-dashed border-muted-foreground/25 p-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                    onClick={() => setIsExtractionOpen(true)}
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <FileSearch className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">素材からブランド情報を抽出</p>
+                      <p className="text-xs text-muted-foreground">
+                        PDF・画像・URLからデザインシステムを自動設定
+                      </p>
+                    </div>
+                  </button>
                 )}
               </div>
             </div>

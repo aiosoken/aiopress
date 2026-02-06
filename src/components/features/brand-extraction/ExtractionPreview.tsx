@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,111 +91,93 @@ export function ExtractionPreview({
     );
   };
 
-  const sourceLabel =
-    result.sourceType === "pdf"
-      ? "PDF"
-      : result.sourceType === "image"
-        ? "画像"
-        : "URL";
+  const confidenceColor =
+    result.confidence >= 80
+      ? "text-emerald-600 dark:text-emerald-400"
+      : result.confidence >= 50
+        ? "text-yellow-600 dark:text-yellow-400"
+        : "text-muted-foreground";
 
   return (
-    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-      {/* 信頼度 & ソース */}
-      <div className="flex items-center gap-3">
-        <Badge variant="outline">{sourceLabel}から抽出</Badge>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>信頼度:</span>
-          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all"
-              style={{ width: `${result.confidence}%` }}
-            />
-          </div>
-          <span className="font-medium">{result.confidence}%</span>
-        </div>
-      </div>
-
-      {/* ブランド名 & 説明 */}
-      {(result.brandName || result.brandDescription) && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">ブランド情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {result.brandName && (
-              <div className="space-y-1">
-                <Label className="text-xs">ブランド名</Label>
-                <Input
-                  value={result.brandName}
-                  onChange={(e) => updateField("brandName", e.target.value)}
-                />
-              </div>
-            )}
-            {result.brandDescription && (
-              <div className="space-y-1">
-                <Label className="text-xs">説明</Label>
-                <Textarea
-                  value={result.brandDescription}
-                  onChange={(e) =>
-                    updateField("brandDescription", e.target.value)
-                  }
-                  rows={2}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* カラーパレット */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">カラーパレット</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 gap-2">
+    <div className="max-h-[60vh] overflow-y-auto -mx-1 px-1">
+      <div className="space-y-6">
+        {/* カラーパレット */}
+        <section>
+          <h4 className="text-sm font-medium mb-3">カラーパレット</h4>
+          <div className="flex gap-3">
             {(
               [
-                { key: "primary" as const, label: "プライマリ" },
-                { key: "secondary" as const, label: "セカンダリ" },
-                { key: "accent" as const, label: "アクセント" },
-                { key: "background" as const, label: "背景" },
-                { key: "text" as const, label: "テキスト" },
+                { key: "primary" as const, label: "Primary" },
+                { key: "secondary" as const, label: "Secondary" },
+                { key: "accent" as const, label: "Accent" },
+                { key: "background" as const, label: "BG" },
+                { key: "text" as const, label: "Text" },
               ] as const
             ).map(({ key, label }) => (
-              <div key={key} className="text-center space-y-1">
-                <input
-                  type="color"
-                  value={result.colors[key]}
-                  onChange={(e) => updateColor(key, e.target.value)}
-                  className="h-10 w-10 rounded border cursor-pointer mx-auto block"
-                />
-                <p className="text-[10px] text-muted-foreground">{label}</p>
-                <Input
-                  value={result.colors[key]}
-                  onChange={(e) => updateColor(key, e.target.value)}
-                  className="text-xs h-7 text-center px-1"
+              <div key={key} className="flex-1 min-w-0">
+                <label className="block cursor-pointer group">
+                  <div
+                    className="h-12 rounded-lg border border-border group-hover:ring-2 ring-primary/30 transition-all"
+                    style={{ backgroundColor: result.colors[key] }}
+                  />
+                  <input
+                    type="color"
+                    value={result.colors[key]}
+                    onChange={(e) => updateColor(key, e.target.value)}
+                    className="sr-only"
+                  />
+                </label>
+                <p className="text-[11px] text-muted-foreground mt-1.5 text-center truncate">
+                  {label}
+                </p>
+                <p className="text-[11px] font-mono text-center text-muted-foreground/70">
+                  {result.colors[key].toUpperCase()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <hr className="border-border" />
+
+        {/* ブランドDNA */}
+        <section>
+          <h4 className="text-sm font-medium mb-3">ブランドDNA</h4>
+          <div className="grid gap-3">
+            {(
+              [
+                { key: "mission" as const, label: "ミッション" },
+                { key: "vision" as const, label: "ビジョン" },
+                { key: "valueProposition" as const, label: "提供価値" },
+                { key: "personality" as const, label: "パーソナリティ" },
+                { key: "tone" as const, label: "トーン＆マナー" },
+              ] as const
+            ).map(({ key, label }) => (
+              <div key={key}>
+                <Label className="text-xs text-muted-foreground">{label}</Label>
+                <Textarea
+                  value={result.brandDNA[key]}
+                  onChange={(e) => updateBrandDNA(key, e.target.value)}
+                  rows={1}
+                  className="mt-1 resize-none text-sm"
                 />
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* タイポグラフィ & ボイス＆トーン */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">タイポグラフィ</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label className="text-xs">フォント</Label>
+        <hr className="border-border" />
+
+        {/* タイポグラフィ & ボイス＆トーン */}
+        <section>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-sm font-medium mb-3">タイポグラフィ</h4>
               <Select
                 value={result.typography.fontFamily}
                 onValueChange={(v) => updateTypography("fontFamily", v)}
               >
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -207,178 +188,161 @@ export function ExtractionPreview({
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">ボイス＆トーン</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label className="text-xs">フォーマリティ</Label>
-              <Select
-                value={result.voiceTone.formality}
-                onValueChange={(v) => updateVoiceTone("formality", v)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="formal">フォーマル</SelectItem>
-                  <SelectItem value="casual">カジュアル</SelectItem>
-                  <SelectItem value="neutral">ニュートラル</SelectItem>
-                </SelectContent>
-              </Select>
+            <div>
+              <h4 className="text-sm font-medium mb-3">ボイス＆トーン</h4>
+              <div className="space-y-2">
+                {(
+                  [
+                    {
+                      key: "formality" as const,
+                      label: "フォーマリティ",
+                      options: [
+                        { value: "formal", label: "フォーマル" },
+                        { value: "neutral", label: "ニュートラル" },
+                        { value: "casual", label: "カジュアル" },
+                      ],
+                    },
+                    {
+                      key: "enthusiasm" as const,
+                      label: "熱意",
+                      options: [
+                        { value: "high", label: "高い" },
+                        { value: "medium", label: "中程度" },
+                        { value: "low", label: "低い" },
+                      ],
+                    },
+                    {
+                      key: "empathy" as const,
+                      label: "共感性",
+                      options: [
+                        { value: "high", label: "高い" },
+                        { value: "medium", label: "中程度" },
+                        { value: "low", label: "低い" },
+                      ],
+                    },
+                  ] as const
+                ).map(({ key, label, options }) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground w-20 shrink-0">
+                      {label}
+                    </span>
+                    <Select
+                      value={result.voiceTone[key]}
+                      onValueChange={(v) => updateVoiceTone(key, v)}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {options.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">熱意</Label>
-              <Select
-                value={result.voiceTone.enthusiasm}
-                onValueChange={(v) => updateVoiceTone("enthusiasm", v)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">高い</SelectItem>
-                  <SelectItem value="medium">中程度</SelectItem>
-                  <SelectItem value="low">低い</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">共感性</Label>
-              <Select
-                value={result.voiceTone.empathy}
-                onValueChange={(v) => updateVoiceTone("empathy", v)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">高い</SelectItem>
-                  <SelectItem value="medium">中程度</SelectItem>
-                  <SelectItem value="low">低い</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </section>
 
-      {/* Brand DNA */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">ブランドDNA</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {(
-            [
-              { key: "mission" as const, label: "ミッション" },
-              { key: "vision" as const, label: "ビジョン" },
-              { key: "valueProposition" as const, label: "提供価値" },
-              { key: "personality" as const, label: "パーソナリティ" },
-              { key: "tone" as const, label: "トーン＆マナー" },
-            ] as const
-          ).map(({ key, label }) => (
-            <div key={key} className="space-y-1">
-              <Label className="text-xs">{label}</Label>
-              <Textarea
-                value={result.brandDNA[key]}
-                onChange={(e) => updateBrandDNA(key, e.target.value)}
-                rows={2}
-                className="text-sm"
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+        <hr className="border-border" />
 
-      {/* ターゲットオーディエンス */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">
-            ターゲットオーディエンス
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* ターゲット */}
+        <section>
+          <h4 className="text-sm font-medium mb-3">ターゲットオーディエンス</h4>
           <Textarea
             value={result.targetAudience}
             onChange={(e) => updateField("targetAudience", e.target.value)}
             rows={2}
-            className="text-sm"
+            className="resize-none text-sm"
           />
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* キーワード */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">キーワード</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              value={newKeyword}
-              onChange={(e) => setNewKeyword(e.target.value)}
-              placeholder="キーワードを追加"
-              className="h-8 text-sm"
-              onKeyDown={(e) => e.key === "Enter" && addKeyword()}
-            />
-            <Button size="sm" variant="outline" onClick={addKeyword}>
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {result.keywords.map((keyword) => (
-              <Badge key={keyword} variant="secondary" className="gap-1 text-xs">
-                {keyword}
-                <button
-                  onClick={() => removeKeyword(keyword)}
-                  className="ml-0.5 hover:text-destructive"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        <hr className="border-border" />
 
-      {/* ブランドバリュー */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">ブランドバリュー</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              placeholder="バリューを追加"
-              className="h-8 text-sm"
-              onKeyDown={(e) => e.key === "Enter" && addBrandValue()}
-            />
-            <Button size="sm" variant="outline" onClick={addBrandValue}>
-              <Plus className="h-3 w-3" />
-            </Button>
+        {/* キーワード & バリュー */}
+        <section className="grid grid-cols-2 gap-6">
+          <div>
+            <h4 className="text-sm font-medium mb-3">キーワード</h4>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {result.keywords.map((keyword) => (
+                <Badge key={keyword} variant="secondary" className="gap-1">
+                  {keyword}
+                  <button
+                    onClick={() => removeKeyword(keyword)}
+                    className="ml-0.5 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <Input
+                value={newKeyword}
+                onChange={(e) => setNewKeyword(e.target.value)}
+                placeholder="追加..."
+                className="h-8 text-sm"
+                onKeyDown={(e) => e.key === "Enter" && addKeyword()}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={addKeyword}
+                className="h-8 px-2 shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {result.brandValues.map((value) => (
-              <Badge key={value} variant="outline" className="gap-1 text-xs">
-                {value}
-                <button
-                  onClick={() => removeBrandValue(value)}
-                  className="ml-0.5 hover:text-destructive"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </Badge>
-            ))}
+
+          <div>
+            <h4 className="text-sm font-medium mb-3">ブランドバリュー</h4>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {result.brandValues.map((value) => (
+                <Badge key={value} variant="outline" className="gap-1">
+                  {value}
+                  <button
+                    onClick={() => removeBrandValue(value)}
+                    className="ml-0.5 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <Input
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                placeholder="追加..."
+                className="h-8 text-sm"
+                onKeyDown={(e) => e.key === "Enter" && addBrandValue()}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={addBrandValue}
+                className="h-8 px-2 shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </section>
+
+        {/* 信頼度 */}
+        <div className="flex items-center justify-end gap-2 pt-2 text-xs text-muted-foreground">
+          <span>信頼度</span>
+          <span className={`font-medium ${confidenceColor}`}>
+            {result.confidence}%
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

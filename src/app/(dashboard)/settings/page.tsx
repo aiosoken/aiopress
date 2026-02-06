@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,18 +11,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Save } from "lucide-react";
+import { User, Mail, Save, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateUserProfile } from "@/lib/firebase/auth";
+import { deleteAccountFunction } from "@/lib/firebase/functions";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const { firebaseUser } = useAuthContext();
   const [displayName, setDisplayName] = useState(firebaseUser?.displayName || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -174,11 +189,53 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="destructive" disabled>
-              アカウントを削除
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={isDeleting}>
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      削除中...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      アカウントを削除
+                    </>
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>本当にアカウントを削除しますか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    アカウントを削除すると、すべてのブランド、資産、クリエイティブ、デザインシステムのデータが完全に削除されます。この操作は取り消すことができません。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      setIsDeleting(true);
+                      try {
+                        await deleteAccountFunction({});
+                        toast.success("アカウントを削除しました");
+                        router.push("/login");
+                      } catch (error: any) {
+                        console.error("Failed to delete account:", error);
+                        toast.error(error.message || "アカウント削除に失敗しました");
+                        setIsDeleting(false);
+                      }
+                    }}
+                  >
+                    削除する
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <p className="mt-2 text-xs text-muted-foreground">
-              アカウント削除機能は現在準備中です
+              所有するすべてのブランドとデータが完全に削除されます
             </p>
           </CardContent>
         </Card>

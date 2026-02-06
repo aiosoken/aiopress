@@ -32,7 +32,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Plus, X, Save, Sparkles, Dna, Type, MessageSquare, Tag, Heart, Target, FileSearch } from "lucide-react";
+import { Palette, Plus, X, Save, Sparkles, Dna, Type, MessageSquare, Tag, Heart, Target, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { getDesignSystem, updateDesignSystem } from "@/lib/firebase/firestore";
 import { updateDesignSystemFunction, suggestKeywordsFunction } from "@/lib/firebase/functions";
@@ -275,8 +275,8 @@ export default function DesignSystemPage() {
             onClick={() => setIsExtractionDialogOpen(true)}
             disabled={!selectedBrandId}
           >
-            <FileSearch className="mr-2 h-4 w-4" />
-            素材から自動抽出
+            <Wand2 className="mr-2 h-4 w-4" />
+            自動抽出
           </Button>
           <Button onClick={handleSave} disabled={!selectedBrandId || isSaving}>
             <Save className="mr-2 h-4 w-4" />

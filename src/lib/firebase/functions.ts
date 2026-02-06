@@ -94,6 +94,12 @@ export const extractBrandFromFileFunction = httpsCallable<
   }
 >(functions, "extractBrandFromFile");
 
+// アカウント削除
+export const deleteAccountFunction = httpsCallable<
+  Record<string, never>,
+  { success: boolean }
+>(functions, "deleteAccount");
+
 // ブランド情報抽出（URL）
 export const extractBrandFromUrlFunction = httpsCallable<
   {
