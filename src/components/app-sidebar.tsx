@@ -11,6 +11,7 @@ import {
   Building2,
   Plus,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const menuItems = [
   { icon: FolderOpen, label: "資産", href: "/assets" },
   { icon: Dna, label: "ブランドDNA", href: "/design-system" },
   { icon: Sparkles, label: "クリエイティブ生成", href: "/creatives" },
+  { icon: BarChart3, label: "分析・レポート", href: "/analytics" },
   { icon: Settings, label: "設定", href: "/settings" },
 ];
 
