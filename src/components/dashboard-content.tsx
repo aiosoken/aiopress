@@ -12,8 +12,10 @@ import {
   Building2,
   Plus,
   ArrowRight,
-  Twitter,
   Wand2,
+  Dna,
+  ImageIcon,
+  MessageSquare,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +30,7 @@ function getTypeIcon(type: CreativeType) {
     case "CATCH_COPY":
       return <Sparkles className="h-4 w-4 text-primary" />;
     case "SNS_POST":
-      return <Twitter className="h-4 w-4 text-primary" />;
+      return <MessageSquare className="h-4 w-4 text-primary" />;
     case "ARTICLE":
       return <FileText className="h-4 w-4 text-primary" />;
     case "IMAGE":
@@ -95,9 +97,9 @@ export function DashboardContent() {
         color: "bg-amber-500/10 text-amber-600",
       },
       {
-        title: "デザインシステム",
+        title: "ブランドDNA",
         value: statsLoading ? "-" : `${stats.designSystemProgress}%`,
-        icon: Palette,
+        icon: Dna,
         color: "bg-primary/10 text-primary",
       },
     ],
@@ -202,7 +204,7 @@ export function DashboardContent() {
         {/* Design System Progress */}
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-medium">デザインシステム進捗</CardTitle>
+            <CardTitle className="text-base font-medium">ブランドDNA進捗</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {statsLoading ? (
@@ -212,7 +214,7 @@ export function DashboardContent() {
             ) : brands.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-sm text-muted-foreground">
-                  ブランドを作成してデザインシステムを設定しましょう
+                  ブランドを作成してブランドDNAを設定しましょう
                 </p>
               </div>
             ) : (
@@ -225,12 +227,12 @@ export function DashboardContent() {
                   <Progress value={stats.designSystemProgress} className="h-2" />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  デザインシステムを設定すると、AIがより適切なクリエイティブを生成できます
+                  ブランドDNAを設定すると、AIがより適切なクリエイティブを生成できます
                 </p>
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link href="/design-system">
-                    <Palette className="mr-2 h-4 w-4" />
-                    デザインシステムを編集
+                    <Dna className="mr-2 h-4 w-4" />
+                    ブランドDNAを編集
                   </Link>
                 </Button>
               </>
@@ -262,8 +264,8 @@ export function DashboardContent() {
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>
                 <Link href="/design-system">
-                  <Palette className="h-5 w-5 text-primary" />
-                  <span className="text-sm">デザイン編集</span>
+                  <Dna className="h-5 w-5 text-primary" />
+                  <span className="text-sm">ブランドDNA</span>
                 </Link>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>

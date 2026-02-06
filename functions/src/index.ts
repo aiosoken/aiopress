@@ -1,4 +1,3 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 admin.initializeApp();
@@ -11,3 +10,6 @@ export { generateCreative, generateImage } from "./creatives";
 
 // デザインシステム関連関数
 export { updateDesignSystem, suggestKeywords } from "./design-system";
+
+// ブランド情報自動抽出関数
+export { extractBrandFromFile, extractBrandFromUrl } from "./brand-extraction";

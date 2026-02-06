@@ -79,6 +79,14 @@ export interface Typography {
   scale: number;
 }
 
+export interface BrandDNA {
+  mission: string;
+  vision: string;
+  valueProposition: string;
+  personality: string;
+  tone: string;
+}
+
 export interface DesignSystem {
   brandId: string;
   colors: ColorPalette;
@@ -87,6 +95,7 @@ export interface DesignSystem {
   keywords: string[];
   brandValues: string[];
   targetAudience: string;
+  brandDNA?: BrandDNA;
   updatedAt: Timestamp;
 }
 
@@ -94,6 +103,8 @@ export interface CreativeMetadata {
   model: string;
   parameters: Record<string, unknown>;
   brandFitScore?: number;
+  brandFitFeedback?: string;
+  generationTime?: number;
 }
 
 export interface Creative {
@@ -104,8 +115,10 @@ export interface Creative {
   content: string;
   imageUrl?: string;
   metadata: CreativeMetadata;
+  isFavorite?: boolean;
   createdBy: string;
   createdAt: Timestamp;
+  updatedAt?: Timestamp;
   status: CreativeStatus;
 }
 
@@ -133,4 +146,31 @@ export interface GenerateCreativeRequest {
 export interface AnalyzeAssetRequest {
   assetId: string;
   brandId: string;
+}
+
+// ブランド情報自動抽出
+export interface BrandExtractionResult {
+  brandName?: string;
+  brandDescription?: string;
+  colors: ColorPalette;
+  typography: Typography;
+  voiceTone: VoiceTone;
+  keywords: string[];
+  brandValues: string[];
+  targetAudience: string;
+  brandDNA: BrandDNA;
+  confidence: number;
+  sourceType: "pdf" | "image" | "url";
+}
+
+export interface ExtractBrandFromFileRequest {
+  brandId?: string;
+  fileUrl: string;
+  fileType: string;
+  fileName: string;
+}
+
+export interface ExtractBrandFromUrlRequest {
+  brandId?: string;
+  url: string;
 }

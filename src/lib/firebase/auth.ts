@@ -155,6 +155,34 @@ export function onAuthChange(callback: (user: FirebaseUser | null) => void) {
   return onAuthStateChanged(auth, callback);
 }
 
+export async function updateUserProfile(
+  displayName: string
+): Promise<void> {
+  checkFirebaseInit();
+
+  const firebaseUser = auth!.currentUser;
+  if (!firebaseUser) {
+    throw new Error("ユーザーがログインしていません");
+  }
+
+  // Firebase Authのプロフィールを更新
+  await updateProfile(firebaseUser, { displayName });
+
+  // Firestoreのユーザードキュメントを更新
+  const userRef = doc(db!, "users", firebaseUser.uid);
+  await setDoc(
+    userRef,
+    {
+      displayName,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  // キャッシュをクリア
+  clearUserCache();
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   if (!auth || !db) return null;
 

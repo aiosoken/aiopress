@@ -43,9 +43,8 @@ export const onAssetUpload = functions
     }
 
     const brandId = pathParts[1];
-    const fileName = pathParts[2];
-    const fileAssetId = fileName.split(".")[0];
 
+    let assetId = "";
     try {
       // アセットドキュメントを検索（storagePathで検索）
       const assetsQuery = await db
@@ -60,7 +59,7 @@ export const onAssetUpload = functions
       }
 
       const assetDoc = assetsQuery.docs[0];
-      const assetId = assetDoc.id;
+      assetId = assetDoc.id;
 
       const assetData = assetDoc.data();
       if (!assetData) return;

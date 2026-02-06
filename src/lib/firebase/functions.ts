@@ -24,22 +24,38 @@ export const generateCreativeFunction = httpsCallable<
       type: string;
       prompt: string;
       content: string;
+      parsedContent?: any;
       metadata: Record<string, unknown>;
       createdBy: string;
       createdAt: any;
       updatedAt: any;
       status: string;
+      isFavorite?: boolean;
     };
   }
 >(functions, "generateCreative");
 
 // 画像生成
 export const generateImageFunction = httpsCallable<
-  { brandId: string; prompt: string },
+  { brandId: string; prompt: string; aspectRatio?: string },
   {
     success: boolean;
+    imageUrl?: string | null;
     imagePrompt?: string;
     message?: string;
+    creative?: {
+      id: string;
+      brandId: string;
+      type: string;
+      prompt: string;
+      content: string;
+      imageUrl?: string;
+      metadata: Record<string, unknown>;
+      createdBy: string;
+      createdAt: any;
+      updatedAt: any;
+      status: string;
+    };
   }
 >(functions, "generateImage");
 
@@ -63,3 +79,29 @@ export const suggestKeywordsFunction = httpsCallable<
     keywords?: string[];
   }
 >(functions, "suggestKeywords");
+
+// ブランド情報抽出（ファイル）
+export const extractBrandFromFileFunction = httpsCallable<
+  {
+    brandId?: string;
+    fileUrl: string;
+    fileType: string;
+    fileName: string;
+  },
+  {
+    success: boolean;
+    result?: import("@/types").BrandExtractionResult;
+  }
+>(functions, "extractBrandFromFile");
+
+// ブランド情報抽出（URL）
+export const extractBrandFromUrlFunction = httpsCallable<
+  {
+    brandId?: string;
+    url: string;
+  },
+  {
+    success: boolean;
+    result?: import("@/types").BrandExtractionResult;
+  }
+>(functions, "extractBrandFromUrl");

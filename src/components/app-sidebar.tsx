@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FolderOpen,
-  Palette,
+  Dna,
   Sparkles,
   Settings,
   Building2,
@@ -37,7 +37,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "ダッシュボード", href: "/dashboard" },
   { icon: Building2, label: "ブランド", href: "/brands" },
   { icon: FolderOpen, label: "資産", href: "/assets" },
-  { icon: Palette, label: "デザインシステム", href: "/design-system" },
+  { icon: Dna, label: "ブランドDNA", href: "/design-system" },
   { icon: Sparkles, label: "クリエイティブ生成", href: "/creatives" },
   { icon: Settings, label: "設定", href: "/settings" },
 ];
