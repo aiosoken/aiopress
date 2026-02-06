@@ -30,6 +30,7 @@ import {
   Pencil,
   Trash2,
   ArrowRight,
+  FileSearch,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -38,6 +39,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { BrandExtractionDialog } from "@/components/features/brand-extraction/BrandExtractionDialog";
+import { updateDesignSystemFunction } from "@/lib/firebase/functions";
+import type { BrandExtractionResult } from "@/types";
 
 export default function BrandsPage() {
   const { firebaseUser } = useAuthContext();
@@ -58,24 +62,62 @@ export default function BrandsPage() {
   } | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExtractionOpen, setIsExtractionOpen] = useState(false);
+  const [pendingExtraction, setPendingExtraction] = useState<BrandExtractionResult | null>(null);
 
   const handleCreate = async () => {
     if (!firebaseUser || !formData.name.trim()) return;
 
     setIsSubmitting(true);
     try {
-      await addBrand(
+      const brandId = await addBrand(
         formData.name.trim(),
         formData.description.trim() || undefined
       );
-      toast.success("ブランドを作成しました");
+
+      // 抽出結果があればデザインシステムに保存
+      if (pendingExtraction && brandId) {
+        try {
+          await updateDesignSystemFunction({
+            brandId,
+            designSystem: {
+              colors: pendingExtraction.colors,
+              typography: pendingExtraction.typography,
+              voiceTone: pendingExtraction.voiceTone,
+              keywords: pendingExtraction.keywords,
+              brandValues: pendingExtraction.brandValues,
+              targetAudience: pendingExtraction.targetAudience,
+              brandDNA: pendingExtraction.brandDNA,
+            },
+          });
+          toast.success("ブランドを作成し、デザインシステムを設定しました");
+        } catch {
+          toast.success("ブランドを作成しました（デザインシステムの設定に失敗）");
+        }
+      } else {
+        toast.success("ブランドを作成しました");
+      }
+
       setIsCreateOpen(false);
       setFormData({ name: "", description: "" });
+      setPendingExtraction(null);
     } catch {
       toast.error("ブランドの作成に失敗しました");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleExtractionComplete = (result: BrandExtractionResult) => {
+    setPendingExtraction(result);
+    if (result.brandName && !formData.name) {
+      setFormData((prev) => ({
+        ...prev,
+        name: result.brandName || prev.name,
+        description: result.brandDescription || prev.description,
+      }));
+    }
+    toast.success("ブランド情報を抽出しました");
   };
 
   const handleEdit = async () => {
@@ -170,6 +212,22 @@ export default function BrandsPage() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                 />
+              </div>
+              <div className="border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsExtractionOpen(true)}
+                >
+                  <FileSearch className="mr-2 h-4 w-4" />
+                  素材からブランド情報を抽出
+                </Button>
+                {pendingExtraction && (
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    抽出済み（信頼度: {pendingExtraction.confidence}%）
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter>
@@ -345,6 +403,12 @@ export default function BrandsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BrandExtractionDialog
+        open={isExtractionOpen}
+        onOpenChange={setIsExtractionOpen}
+        onComplete={handleExtractionComplete}
+      />
     </div>
   );
 }

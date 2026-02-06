@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Save } from "lucide-react";
 import { toast } from "sonner";
+import { updateUserProfile } from "@/lib/firebase/auth";
 
 export default function SettingsPage() {
   const { firebaseUser } = useAuthContext();
@@ -33,12 +34,18 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
+    if (!displayName.trim()) {
+      toast.error("表示名を入力してください");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateUserProfile(displayName.trim());
       toast.success("設定を保存しました");
-    } catch (error) {
-      toast.error("保存に失敗しました");
+    } catch (error: any) {
+      console.error("Failed to save settings:", error);
+      toast.error(error.message || "保存に失敗しました");
     } finally {
       setIsSaving(false);
     }

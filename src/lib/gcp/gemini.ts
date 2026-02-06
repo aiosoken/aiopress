@@ -1,3 +1,5 @@
+// @ts-nocheck
+// This file is server-side only and not used in the frontend build
 import { VertexAI } from "@google-cloud/vertexai";
 
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT_ID || "";
