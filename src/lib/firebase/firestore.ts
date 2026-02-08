@@ -60,23 +60,44 @@ export async function getBrand(brandId: string): Promise<Brand | null> {
 }
 
 export async function getUserBrands(userId: string): Promise<Brand[]> {
-  const membersQuery = query(
-    collection(checkDbInit(), "brandMembers"),
-    where("userId", "==", userId)
+  const database = checkDbInit();
+
+  // 1. ownerId で直接クエリ（セキュリティルール問題を回避）
+  const ownedQuery = query(
+    collection(database, "brands"),
+    where("ownerId", "==", userId)
   );
-  const membersSnapshot = await getDocs(membersQuery);
-
-  const brandIds = membersSnapshot.docs.map((d) => d.data().brandId);
-  if (brandIds.length === 0) return [];
-
-  // 個別getDoc（セキュリティルールのexists()がlist操作で失敗するため）
-  const brandDocs = await Promise.all(
-    brandIds.map((id) => getDoc(doc(checkDbInit(), "brands", id)))
+  const ownedSnapshot = await getDocs(ownedQuery);
+  const ownedBrands = ownedSnapshot.docs.map(
+    (d) => ({ id: d.id, ...d.data() } as Brand)
   );
+  const ownedIds = new Set(ownedBrands.map((b) => b.id));
 
-  return brandDocs
-    .filter((d) => d.exists())
-    .map((d) => ({ id: d.id, ...d.data() } as Brand));
+  // 2. brandMembers 経由で共有ブランドも取得
+  let sharedBrands: Brand[] = [];
+  try {
+    const membersQuery = query(
+      collection(database, "brandMembers"),
+      where("userId", "==", userId)
+    );
+    const membersSnapshot = await getDocs(membersQuery);
+    const sharedBrandIds = membersSnapshot.docs
+      .map((d) => d.data().brandId)
+      .filter((id): id is string => typeof id === "string" && !ownedIds.has(id));
+
+    if (sharedBrandIds.length > 0) {
+      const sharedDocs = await Promise.all(
+        sharedBrandIds.map((id) => getDoc(doc(database, "brands", id)))
+      );
+      sharedBrands = sharedDocs
+        .filter((d) => d.exists())
+        .map((d) => ({ id: d.id, ...d.data() } as Brand));
+    }
+  } catch (err) {
+    console.error("Failed to fetch shared brands:", err);
+  }
+
+  return [...ownedBrands, ...sharedBrands];
 }
 
 export async function updateBrand(

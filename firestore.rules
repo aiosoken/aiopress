@@ -25,7 +25,7 @@ service cloud.firestore {
 
     // ブランド
     match /brands/{brandId} {
-      allow read: if isBrandMember(brandId);
+      allow read: if resource.data.ownerId == request.auth.uid || isBrandMember(brandId);
       allow create: if isAuthenticated();
       allow update: if isBrandOwnerOrAdmin(brandId);
       allow delete: if isAuthenticated() &&

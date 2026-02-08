@@ -31,6 +31,8 @@ import {
   Trash2,
   ArrowRight,
   FileSearch,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -48,9 +50,11 @@ export default function BrandsPage() {
   const {
     brands,
     loading,
+    error,
     addBrand,
     editBrand,
     removeBrand,
+    refetch,
   } = useBrandsContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -276,6 +280,22 @@ export default function BrandsPage() {
         <div className="flex items-center justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-16 w-16 text-destructive/50" />
+            <h3 className="mt-4 text-lg font-semibold">
+              ブランドの読み込みに失敗しました
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground text-center">
+              {error}
+            </p>
+            <Button className="mt-6" variant="outline" onClick={refetch}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              再読み込み
+            </Button>
+          </CardContent>
+        </Card>
       ) : brands.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
