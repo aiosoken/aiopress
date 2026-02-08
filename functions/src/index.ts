@@ -22,3 +22,11 @@ export { generatePresentation } from "./presentations";
 
 // 印刷関連関数（Epson Connect）
 export { printCreative, saveEpsonSettings, getEpsonSettings } from "./printing";
+
+// ブランドメンバー管理関数
+export {
+  inviteBrandMember,
+  updateBrandMemberRole,
+  removeBrandMember,
+  getBrandMembersWithUsers,
+} from "./brand-members";
