@@ -34,6 +34,15 @@ export const inviteBrandMember = functions
       );
     }
 
+    // メールアドレス形式のバリデーション
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof email !== "string" || !emailRegex.test(email)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "有効なメールアドレスを入力してください"
+      );
+    }
+
     // ロールのバリデーション
     const validRoles = ["OWNER", "ADMIN", "MEMBER"];
     if (!validRoles.includes(role)) {
@@ -305,8 +314,8 @@ export const getBrandMembersWithUsers = functions
       .where("brandId", "==", brandId)
       .get();
 
-    // ユーザー情報を取得して結合
-    const members = await Promise.all(
+    // ユーザー情報を取得して結合（個別の失敗がリスト全体に影響しないようPromise.allSettledを使用）
+    const results = await Promise.allSettled(
       membersSnapshot.docs.map(async (doc) => {
         const memberData = doc.data();
         const userDoc = await db.collection("users").doc(memberData.userId).get();
@@ -326,6 +335,10 @@ export const getBrandMembersWithUsers = functions
         };
       })
     );
+
+    const members = results
+      .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
+      .map((r) => r.value);
 
     return members;
   });

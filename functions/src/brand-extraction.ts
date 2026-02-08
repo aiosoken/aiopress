@@ -474,7 +474,7 @@ Vision AI分析結果:
 function isPrivateUrl(urlString: string): boolean {
   try {
     const url = new URL(urlString);
-    const hostname = url.hostname;
+    const hostname = url.hostname.replace(/^\[|\]$/g, ""); // IPv6ブラケット除去
 
     // localhost
     if (
@@ -485,7 +485,20 @@ function isPrivateUrl(urlString: string): boolean {
       return true;
     }
 
-    // プライベートIPレンジ
+    // IPv6 プライベート/リンクローカル
+    const lowerHost = hostname.toLowerCase();
+    if (
+      lowerHost.startsWith("fe80:") ||  // link-local
+      lowerHost.startsWith("fc") ||      // unique local (fc00::/7)
+      lowerHost.startsWith("fd") ||      // unique local (fc00::/7)
+      lowerHost.startsWith("ff") ||      // multicast
+      lowerHost === "::1" ||
+      lowerHost === "::"
+    ) {
+      return true;
+    }
+
+    // プライベートIPレンジ (IPv4)
     const parts = hostname.split(".").map(Number);
     if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
       // 10.0.0.0/8
@@ -494,10 +507,12 @@ function isPrivateUrl(urlString: string): boolean {
       if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
       // 192.168.0.0/16
       if (parts[0] === 192 && parts[1] === 168) return true;
-      // 169.254.0.0/16 (link-local)
+      // 169.254.0.0/16 (link-local + クラウドメタデータエンドポイント)
       if (parts[0] === 169 && parts[1] === 254) return true;
       // 0.0.0.0
       if (parts.every((p) => p === 0)) return true;
+      // 127.0.0.0/8
+      if (parts[0] === 127) return true;
     }
 
     return false;

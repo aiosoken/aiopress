@@ -248,7 +248,7 @@ export const printCreative = functions
       console.error("Epson Connect print error:", error);
       throw new functions.https.HttpsError(
         "internal",
-        `印刷に失敗しました: ${error.message || "不明なエラー"}`
+        "印刷に失敗しました。Epson Connect の接続設定を確認してください。"
       );
     } finally {
       // 一時ファイルを削除
@@ -313,7 +313,7 @@ export const saveEpsonSettings = functions
       console.error("Epson Connect connection test failed:", error);
       throw new functions.https.HttpsError(
         "invalid-argument",
-        `接続テストに失敗しました: ${error.message || "認証情報を確認してください"}`
+        "接続テストに失敗しました。認証情報を確認してください。"
       );
     }
   });
