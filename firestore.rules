@@ -43,32 +43,34 @@ service cloud.firestore {
 
     // 資産（list操作ではexists()が使えないためget/listを分離）
     match /assets/{assetId} {
-      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow get: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.createdBy == request.auth.uid);
       allow list: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow update, delete: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.createdBy == request.auth.uid);
     }
 
     // デザインシステム
     match /designSystems/{brandId} {
-      allow read: if isBrandMember(brandId);
-      allow write: if isBrandOwnerOrAdmin(brandId);
+      allow read: if isBrandMember(brandId) ||
+        get(/databases/$(database)/documents/brands/$(brandId)).data.ownerId == request.auth.uid;
+      allow write: if isBrandOwnerOrAdmin(brandId) ||
+        get(/databases/$(database)/documents/brands/$(brandId)).data.ownerId == request.auth.uid;
     }
 
     // クリエイティブ(list操作ではexists()が使えないためget/listを分離)
     match /creatives/{creativeId} {
-      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow get: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.createdBy == request.auth.uid);
       allow list: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow update, delete: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.createdBy == request.auth.uid);
     }
 
     // クリエイティブフィードバック
     match /creativeFeedbacks/{feedbackId} {
-      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow get: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.userId == request.auth.uid);
       allow list: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow update, delete: if isAuthenticated() && (isBrandMember(resource.data.brandId) || resource.data.userId == request.auth.uid);
     }
   }
 }
