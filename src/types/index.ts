@@ -6,6 +6,8 @@ export type CreativeType = "CATCH_COPY" | "SNS_POST" | "ARTICLE" | "IMAGE" | "PR
 
 export type CreativeStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
+export type FeedbackFlag = "approved" | "needs_revision" | "rejected";
+
 export interface User {
   id: string;
   email: string;
@@ -107,6 +109,17 @@ export interface CreativeMetadata {
   generationTime?: number;
 }
 
+export interface ContentFeedback {
+  id: string;
+  startIndex: number;
+  endIndex: number;
+  selectedText: string;
+  flag: FeedbackFlag;
+  note?: string;
+  createdAt: Timestamp;
+  createdBy: string;
+}
+
 export interface Creative {
   id: string;
   brandId: string;
@@ -116,6 +129,7 @@ export interface Creative {
   imageUrl?: string;
   pptxUrl?: string;
   metadata: CreativeMetadata;
+  feedbacks?: ContentFeedback[];
   isFavorite?: boolean;
   createdBy: string;
   createdAt: Timestamp;

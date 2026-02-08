@@ -20,6 +20,7 @@ import type {
   Asset,
   DesignSystem,
   Creative,
+  ContentFeedback,
   BrandRole,
 } from "@/types";
 
@@ -326,6 +327,61 @@ export async function updateCreative(
 
 export async function deleteCreative(creativeId: string): Promise<void> {
   await deleteDoc(doc(checkDbInit(), "creatives", creativeId));
+}
+
+export async function addContentFeedback(
+  creativeId: string,
+  feedback: Omit<ContentFeedback, "id" | "createdAt">
+): Promise<void> {
+  const creative = await getCreative(creativeId);
+  if (!creative) throw new Error("Creative not found");
+
+  const newFeedback: ContentFeedback = {
+    ...feedback,
+    id: `fb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    createdAt: serverTimestamp() as Timestamp,
+  };
+
+  const feedbacks = creative.feedbacks || [];
+  feedbacks.push(newFeedback);
+
+  await updateDoc(doc(checkDbInit(), "creatives", creativeId), {
+    feedbacks,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function removeContentFeedback(
+  creativeId: string,
+  feedbackId: string
+): Promise<void> {
+  const creative = await getCreative(creativeId);
+  if (!creative) throw new Error("Creative not found");
+
+  const feedbacks = (creative.feedbacks || []).filter((fb) => fb.id !== feedbackId);
+
+  await updateDoc(doc(checkDbInit(), "creatives", creativeId), {
+    feedbacks,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function updateContentFeedback(
+  creativeId: string,
+  feedbackId: string,
+  updates: Partial<Pick<ContentFeedback, "flag" | "note">>
+): Promise<void> {
+  const creative = await getCreative(creativeId);
+  if (!creative) throw new Error("Creative not found");
+
+  const feedbacks = (creative.feedbacks || []).map((fb) =>
+    fb.id === feedbackId ? { ...fb, ...updates } : fb
+  );
+
+  await updateDoc(doc(checkDbInit(), "creatives", creativeId), {
+    feedbacks,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function getAllUserAssets(brandIds: string[]): Promise<Asset[]> {
