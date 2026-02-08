@@ -41,9 +41,10 @@ service cloud.firestore {
          isBrandOwnerOrAdmin(resource.data.brandId));
     }
 
-    // 資産
+    // 資産（list操作ではexists()が使えないためget/listを分離）
     match /assets/{assetId} {
-      allow read: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow list: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
     }
@@ -54,9 +55,10 @@ service cloud.firestore {
       allow write: if isBrandOwnerOrAdmin(brandId);
     }
 
-    // クリエイティブ
+    // クリエイティブ（list操作ではexists()が使えないためget/listを分離）
     match /creatives/{creativeId} {
-      allow read: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow list: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
     }
