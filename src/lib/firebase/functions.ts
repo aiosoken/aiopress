@@ -176,3 +176,42 @@ export const getEpsonSettingsFunction = httpsCallable<
     connectionStatus?: string;
   }
 >(functions, "getEpsonSettings");
+
+// クリエイティブフィードバック送信
+export const sendCreativeFeedbackFunction = httpsCallable<
+  {
+    creativeId: string;
+    feedbackText: string;
+  },
+  {
+    success: boolean;
+    message?: string;
+    feedbackId?: string;
+    messageId?: string;
+    analysis?: string;
+    improvedContent?: string;
+  }
+>(functions, "sendCreativeFeedback");
+
+// クリエイティブ改善案適用
+export const applyCreativeImprovementFunction = httpsCallable<
+  {
+    creativeId: string;
+    messageId: string;
+  },
+  {
+    success: boolean;
+    message?: string;
+  }
+>(functions, "applyCreativeImprovement");
+
+// クリエイティブフィードバック取得
+export const getCreativeFeedbackFunction = httpsCallable<
+  {
+    creativeId: string;
+  },
+  {
+    success: boolean;
+    feedback?: import("@/types").CreativeFeedback | null;
+  }
+>(functions, "getCreativeFeedback");
