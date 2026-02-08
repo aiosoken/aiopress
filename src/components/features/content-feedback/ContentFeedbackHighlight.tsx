@@ -108,7 +108,7 @@ export function ContentFeedbackHighlight({
     }
 
     const sortedFeedbacks = [...feedbacks].sort((a, b) => a.startIndex - b.startIndex);
-    const segments: JSX.Element[] = [];
+    const segments: React.ReactNode[] = [];
     let currentIndex = 0;
 
     sortedFeedbacks.forEach((feedback, idx) => {

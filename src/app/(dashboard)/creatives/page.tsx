@@ -512,7 +512,7 @@ export default function CreativesPage() {
                   ...feedback,
                   createdBy: firebaseUser?.uid || "",
                 });
-                await loadCreatives();
+                await fetchCreatives();
                 toast.success("フィードバックを追加しました");
               } catch (error) {
                 console.error("Failed to add feedback:", error);
@@ -522,7 +522,7 @@ export default function CreativesPage() {
             onUpdateFeedback={async (feedbackId, updates) => {
               try {
                 await updateContentFeedback(creative.id, feedbackId, updates);
-                await loadCreatives();
+                await fetchCreatives();
                 toast.success("フィードバックを更新しました");
               } catch (error) {
                 console.error("Failed to update feedback:", error);
@@ -532,7 +532,7 @@ export default function CreativesPage() {
             onRemoveFeedback={async (feedbackId) => {
               try {
                 await removeContentFeedback(creative.id, feedbackId);
-                await loadCreatives();
+                await fetchCreatives();
                 toast.success("フィードバックを削除しました");
               } catch (error) {
                 console.error("Failed to remove feedback:", error);
