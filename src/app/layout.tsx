@@ -1,7 +1,6 @@
 import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider, ThemeProvider } from '@/components/providers'
 import './globals.css'
 
@@ -31,7 +30,6 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   )
