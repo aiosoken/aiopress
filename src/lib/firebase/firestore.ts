@@ -163,7 +163,6 @@ export async function createAsset(
   fileSize?: number
 ): Promise<string> {
   try {
-    console.log("Creating asset in Firestore:", { brandId, fileName, fileType });
     const assetRef = await addDoc(collection(checkDbInit(), "assets"), {
       brandId,
       fileName,
@@ -177,7 +176,6 @@ export async function createAsset(
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-    console.log("Asset created with ID:", assetRef.id);
     return assetRef.id;
   } catch (error) {
     console.error("Firestore createAsset error:", error);
@@ -193,14 +191,12 @@ export async function getAsset(assetId: string): Promise<Asset | null> {
 
 export async function getBrandAssets(brandId: string): Promise<Asset[]> {
   try {
-    console.log("Fetching assets for brand:", brandId);
     const assetsQuery = query(
       collection(checkDbInit(), "assets"),
       where("brandId", "==", brandId),
       orderBy("createdAt", "desc")
     );
     const snapshot = await getDocs(assetsQuery);
-    console.log("Fetched assets count:", snapshot.docs.length);
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Asset));
   } catch (error) {
     console.error("Firestore getBrandAssets error:", error);

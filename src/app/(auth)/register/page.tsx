@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/providers";
@@ -21,13 +21,19 @@ import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, loginWithGoogle, loading, error } = useAuthContext();
+  const { register, loginWithGoogle, loading, error, firebaseUser } = useAuthContext();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState("");
+
+  useEffect(() => {
+    if (!loading && firebaseUser) {
+      router.replace("/dashboard");
+    }
+  }, [firebaseUser, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
