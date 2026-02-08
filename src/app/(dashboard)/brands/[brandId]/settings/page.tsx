@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { uploadLogo } from "@/lib/firebase/storage";
 import { updateBrand } from "@/lib/firebase/firestore";
+import { BrandMembersCard } from "@/components/features/brand-members/BrandMembersCard";
 
 interface BrandSettingsPageProps {
   params: Promise<{ brandId: string }>;
@@ -265,6 +266,8 @@ export default function BrandSettingsPage({ params }: BrandSettingsPageProps) {
             </Button>
           </CardContent>
         </Card>
+
+        <BrandMembersCard brandId={brandId} />
 
         <Card className="border-destructive/50">
           <CardHeader>
