@@ -123,6 +123,141 @@ const DEFAULT_RESULT: Omit<BrandExtractionResult, "sourceType"> = {
   confidence: 0,
 };
 
+// ---------- Color helpers ----------
+function clamp01(v: number) {
+  return Math.max(0, Math.min(1, v));
+}
+
+function toHex2(n: number) {
+  return Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+}
+
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hp = h / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let r1 = 0,
+    g1 = 0,
+    b1 = 0;
+  if (hp >= 0 && hp < 1) [r1, g1, b1] = [c, x, 0];
+  else if (hp >= 1 && hp < 2) [r1, g1, b1] = [x, c, 0];
+  else if (hp >= 2 && hp < 3) [r1, g1, b1] = [0, c, x];
+  else if (hp >= 3 && hp < 4) [r1, g1, b1] = [0, x, c];
+  else if (hp >= 4 && hp < 5) [r1, g1, b1] = [x, 0, c];
+  else if (hp >= 5 && hp <= 6) [r1, g1, b1] = [c, 0, x];
+  const m = l - c / 2;
+  return { r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 };
+}
+
+function parseColorToHex(input?: string | null): string | null {
+  if (!input) return null;
+  const s = String(input).trim().toLowerCase();
+  // #rrggbb
+  const m6 = s.match(/^#([0-9a-f]{6})$/i);
+  if (m6) return `#${m6[1]}`.toUpperCase();
+  // #rgb
+  const m3 = s.match(/^#([0-9a-f]{3})$/i);
+  if (m3) {
+    const [r, g, b] = m3[1].split("");
+    return `#${r}${r}${g}${g}${b}${b}`.toUpperCase();
+  }
+  // rgb/rgba
+  const mrgb = s.match(/^rgba?\(([^)]+)\)$/i);
+  if (mrgb) {
+    const parts = mrgb[1].split(/\s*,\s*/).map(Number);
+    if (parts.length >= 3 && parts.every((n, i) => (i < 3 ? !isNaN(n) : true))) {
+      const [r, g, b] = parts;
+      return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}`.toUpperCase();
+    }
+  }
+  // hsl/hsla
+  const mhsl = s.match(/^hsla?\(([^)]+)\)$/i);
+  if (mhsl) {
+    const parts = mhsl[1].split(/\s*,\s*/);
+    if (parts.length >= 3) {
+      const h = parseFloat(parts[0]);
+      const sP = parts[1].trim().replace(/%$/, "");
+      const lP = parts[2].trim().replace(/%$/, "");
+      const s = clamp01(parseFloat(sP) / 100);
+      const l = clamp01(parseFloat(lP) / 100);
+      if (!isNaN(h) && !isNaN(s) && !isNaN(l)) {
+        const { r, g, b } = hslToRgb(((h % 360) + 360) % 360, s, l);
+        return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}`.toUpperCase();
+      }
+    }
+  }
+  return null;
+}
+
+function isValidHexColor(hex?: string | null): boolean {
+  return !!hex && /^#([0-9A-F]{6})$/.test(hex);
+}
+
+function lightenDarken(hex: string, amount: number): string {
+  // amount: -1.0..1.0
+  const m = hex.match(/^#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/i);
+  if (!m) return hex;
+  const r = parseInt(m[1], 16);
+  const g = parseInt(m[2], 16);
+  const b = parseInt(m[3], 16);
+  const delta = Math.round(255 * amount);
+  return `#${toHex2(r + delta)}${toHex2(g + delta)}${toHex2(b + delta)}`.toUpperCase();
+}
+
+function relativeLuminance(hex: string): number {
+  const m = hex.match(/^#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/i);
+  if (!m) return 0;
+  const [r, g, b] = [m[1], m[2], m[3]].map((v) => parseInt(v, 16) / 255);
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const [R, G, B] = [lin(r), lin(g), lin(b)];
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function contrastTextFor(bgHex: string): "#000000" | "#FFFFFF" {
+  try {
+    return relativeLuminance(bgHex) > 0.5 ? "#000000" : "#FFFFFF";
+  } catch {
+    return "#000000";
+  }
+}
+
+type PartialColors = Partial<BrandExtractionResult["colors"]>;
+
+function mergeWithFallbackColors(
+  extracted: PartialColors,
+  hints: { themeColor?: string | null; ogColors?: string[] | null },
+  defaults: BrandExtractionResult["colors"]
+): BrandExtractionResult["colors"] {
+  const themeHex = parseColorToHex(hints.themeColor || undefined);
+  const og = (hints.ogColors || []).map((c) => parseColorToHex(c)).filter(isValidHexColor) as string[];
+
+  const primary =
+    (parseColorToHex(extracted.primary) as string | null) ||
+    themeHex ||
+    og[0] ||
+    defaults.primary;
+
+  const secondary =
+    (parseColorToHex(extracted.secondary) as string | null) ||
+    og[1] ||
+    lightenDarken(primary, -0.2);
+
+  const accent =
+    (parseColorToHex(extracted.accent) as string | null) ||
+    og[2] ||
+    lightenDarken(primary, 0.2);
+
+  const background =
+    (parseColorToHex(extracted.background) as string | null) ||
+    defaults.background;
+
+  const text =
+    (parseColorToHex(extracted.text) as string | null) ||
+    contrastTextFor(background);
+
+  return { primary, secondary, accent, background, text };
+}
+
 function parseExtractionResult(
   responseText: string,
   sourceType: "pdf" | "image" | "url"
@@ -131,18 +266,17 @@ function parseExtractionResult(
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      return {
+      // 一旦そのまま取り出し、後段で正規化/フォールバックを適用
+      const provisional: BrandExtractionResult = {
         brandName: parsed.brandName || DEFAULT_RESULT.brandName,
         brandDescription:
           parsed.brandDescription || DEFAULT_RESULT.brandDescription,
         colors: {
-          primary: parsed.colors?.primary || DEFAULT_RESULT.colors.primary,
-          secondary:
-            parsed.colors?.secondary || DEFAULT_RESULT.colors.secondary,
-          accent: parsed.colors?.accent || DEFAULT_RESULT.colors.accent,
-          background:
-            parsed.colors?.background || DEFAULT_RESULT.colors.background,
-          text: parsed.colors?.text || DEFAULT_RESULT.colors.text,
+          primary: parsed.colors?.primary || "",
+          secondary: parsed.colors?.secondary || "",
+          accent: parsed.colors?.accent || "",
+          background: parsed.colors?.background || "",
+          text: parsed.colors?.text || "",
         },
         typography: {
           fontFamily:
@@ -179,6 +313,7 @@ function parseExtractionResult(
         confidence: parsed.confidence || DEFAULT_RESULT.confidence,
         sourceType,
       };
+      return provisional;
     }
   } catch (error) {
     console.error("Failed to parse extraction result:", error);
@@ -227,6 +362,7 @@ export const extractBrandFromFile = functions
       }
 
       let visionContext = "";
+      let fileDominantColors: string[] | undefined = undefined;
 
       // 画像の場合、Vision AIで事前分析
       if (isImage) {
@@ -263,6 +399,8 @@ Vision AI分析結果:
 - 検出ロゴ: ${logos.join(", ")}
 - 主要カラー: ${colors.join(", ")}
 `;
+          // 後段のフォールバック用に利用
+          fileDominantColors = colors;
         } catch (error) {
           console.error("Vision AI error:", error);
         }
@@ -301,7 +439,23 @@ Vision AI分析結果:
       const sourceType = isPdf ? "pdf" : "image";
       const extractionResult = parseExtractionResult(responseText, sourceType);
 
-      return { success: true, result: extractionResult };
+      const ogColors = fileDominantColors;
+      const mergedColors = mergeWithFallbackColors(
+        extractionResult.colors,
+        { themeColor: null, ogColors },
+        DEFAULT_RESULT.colors
+      );
+
+      const finalResult: BrandExtractionResult = {
+        ...extractionResult,
+        colors: mergedColors,
+      };
+
+      try {
+        console.log("[extractBrandFromFile] mergedColors=", mergedColors);
+      } catch {}
+
+      return { success: true, result: finalResult };
     } catch (error: any) {
       console.error("Error extracting brand from file:", error);
       if (error instanceof functions.https.HttpsError) throw error;
@@ -443,6 +597,7 @@ export const extractBrandFromUrl = functions
 
       // OG画像があればVision AIで分析
       let imageAnalysis = "";
+      let ogColors: string[] | undefined = undefined;
       if (metaInfo.ogImage) {
         try {
           const imageUrl = metaInfo.ogImage.startsWith("http")
@@ -479,6 +634,7 @@ OG画像のVision AI分析:
 - 検出ロゴ: ${logos.join(", ")}
 - 主要カラー: ${colors.join(", ")}
 `;
+            ogColors = colors;
           }
         } catch (error) {
           console.error("OG image analysis error:", error);
@@ -525,7 +681,26 @@ ${textContent}
 
       const extractionResult = parseExtractionResult(responseText, "url");
 
-      return { success: true, result: extractionResult };
+      // テーマカラーとOGカラー群からフォールバックを構築
+      const mergedColors = mergeWithFallbackColors(
+        extractionResult.colors,
+        { themeColor: metaInfo.themeColor, ogColors },
+        DEFAULT_RESULT.colors
+      );
+
+      const finalResult: BrandExtractionResult = {
+        ...extractionResult,
+        brandName: extractionResult.brandName || metaInfo.ogTitle || metaInfo.title || extractionResult.brandName,
+        brandDescription:
+          extractionResult.brandDescription || metaInfo.ogDescription || metaInfo.description || extractionResult.brandDescription,
+        colors: mergedColors,
+      };
+
+      try {
+        console.log("[extractBrandFromUrl] themeColor=", metaInfo.themeColor, "ogColors=", ogColors, "mergedColors=", mergedColors);
+      } catch {}
+
+      return { success: true, result: finalResult };
     } catch (error: any) {
       console.error("Error extracting brand from URL:", error);
       if (error instanceof functions.https.HttpsError) throw error;
