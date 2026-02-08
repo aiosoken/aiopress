@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/providers";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Save, Trash2, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, Mail, Save, Trash2, Loader2, Printer, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { updateUserProfile } from "@/lib/firebase/auth";
-import { deleteAccountFunction } from "@/lib/firebase/functions";
+import { deleteAccountFunction, saveEpsonSettingsFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -37,6 +38,61 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState(firebaseUser?.displayName || "");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Epson Connect 設定
+  const [epsonPrinterEmail, setEpsonPrinterEmail] = useState("");
+  const [epsonClientId, setEpsonClientId] = useState("");
+  const [epsonClientSecret, setEpsonClientSecret] = useState("");
+  const [epsonConnected, setEpsonConnected] = useState(false);
+  const [epsonPrinterName, setEpsonPrinterName] = useState("");
+  const [isEpsonSaving, setIsEpsonSaving] = useState(false);
+  const [isEpsonLoading, setIsEpsonLoading] = useState(true);
+
+  useEffect(() => {
+    loadEpsonSettings();
+  }, []);
+
+  const loadEpsonSettings = async () => {
+    try {
+      const result = await getEpsonSettingsFunction({});
+      if (result.data.configured) {
+        setEpsonConnected(true);
+        setEpsonPrinterEmail(result.data.printerEmail || "");
+        setEpsonPrinterName(result.data.printerName || "");
+      }
+    } catch (error) {
+      console.error("Failed to load Epson settings:", error);
+    } finally {
+      setIsEpsonLoading(false);
+    }
+  };
+
+  const handleEpsonSave = async () => {
+    if (!epsonPrinterEmail.trim() || !epsonClientId.trim() || !epsonClientSecret.trim()) {
+      toast.error("すべての項目を入力してください");
+      return;
+    }
+    setIsEpsonSaving(true);
+    try {
+      const result = await saveEpsonSettingsFunction({
+        printerEmail: epsonPrinterEmail.trim(),
+        clientId: epsonClientId.trim(),
+        clientSecret: epsonClientSecret.trim(),
+      });
+      if (result.data.success) {
+        setEpsonConnected(true);
+        setEpsonPrinterName(result.data.printerName || "");
+        setEpsonClientId("");
+        setEpsonClientSecret("");
+        toast.success(result.data.message || "Epson Connect に接続しました");
+      }
+    } catch (error: any) {
+      console.error("Failed to save Epson settings:", error);
+      toast.error(error.message || "接続に失敗しました。認証情報を確認してください。");
+    } finally {
+      setIsEpsonSaving(false);
+    }
+  };
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -69,7 +125,7 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">設定</h1>
+        <h1 className="heading-page text-foreground">設定</h1>
         <p className="text-sm text-muted-foreground mt-1">
           アカウント設定とプロフィールを管理します
         </p>
@@ -181,7 +237,117 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/50">
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Printer className="h-4 w-4" />
+                  Epson Connect
+                </CardTitle>
+                <CardDescription>
+                  プリンターと連携してクリエイティブを直接印刷できます
+                </CardDescription>
+              </div>
+              {!isEpsonLoading && (
+                <Badge
+                  variant="outline"
+                  className={
+                    epsonConnected
+                      ? "text-emerald-600 border-emerald-300"
+                      : "text-muted-foreground"
+                  }
+                >
+                  {epsonConnected ? (
+                    <>
+                      <CheckCircle className="mr-1 h-3 w-3" />
+                      接続済み
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="mr-1 h-3 w-3" />
+                      未設定
+                    </>
+                  )}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {epsonConnected && (
+              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-4">
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                  プリンター: {epsonPrinterName || epsonPrinterEmail}
+                </p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                  クリエイティブページから印刷できます
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                <a
+                  href="https://developer.epsonconnect.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  Epson Connect 開発者ポータル
+                </a>
+                でアプリを作成し、認証情報を取得してください。
+              </p>
+
+              <div className="space-y-2">
+                <Label htmlFor="epsonPrinterEmail">プリンターメールアドレス</Label>
+                <Input
+                  id="epsonPrinterEmail"
+                  type="email"
+                  value={epsonPrinterEmail}
+                  onChange={(e) => setEpsonPrinterEmail(e.target.value)}
+                  placeholder="printer@print.epsonconnect.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="epsonClientId">Client ID</Label>
+                <Input
+                  id="epsonClientId"
+                  value={epsonClientId}
+                  onChange={(e) => setEpsonClientId(e.target.value)}
+                  placeholder={epsonConnected ? "••••••••（設定済み）" : "Client IDを入力"}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="epsonClientSecret">Client Secret</Label>
+                <Input
+                  id="epsonClientSecret"
+                  type="password"
+                  value={epsonClientSecret}
+                  onChange={(e) => setEpsonClientSecret(e.target.value)}
+                  placeholder={epsonConnected ? "••••••••（設定済み）" : "Client Secretを入力"}
+                />
+              </div>
+            </div>
+
+            <Button onClick={handleEpsonSave} disabled={isEpsonSaving}>
+              {isEpsonSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  接続テスト中...
+                </>
+              ) : (
+                <>
+                  <Printer className="mr-2 h-4 w-4" />
+                  {epsonConnected ? "再接続" : "接続テスト＆保存"}
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive/20">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-medium text-destructive">危険な操作</CardTitle>
             <CardDescription>

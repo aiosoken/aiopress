@@ -174,3 +174,21 @@ export interface ExtractBrandFromUrlRequest {
   brandId?: string;
   url: string;
 }
+
+// Epson Connect 印刷
+export interface EpsonPrintSettings {
+  media_size?: string;
+  media_type?: string;
+  borderless?: boolean;
+  print_quality?: string;
+  color_mode?: string;
+  two_sided?: string;
+  copies?: number;
+}
+
+export interface EpsonConnectSettings {
+  configured: boolean;
+  printerEmail?: string;
+  printerName?: string;
+  connectionStatus?: string;
+}

@@ -9,9 +9,32 @@ import {
 } from "@/lib/firebase/firestore";
 import type { Brand } from "@/types";
 
+const STORAGE_KEY = "aiopress_selectedBrandId";
+
+function getStoredBrandId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredBrandId(brandId: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (brandId) {
+      localStorage.setItem(STORAGE_KEY, brandId);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {}
+}
+
 interface BrandsState {
   brands: Brand[];
   currentBrand: Brand | null;
+  selectedBrandId: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -20,6 +43,7 @@ export function useBrands() {
   const [state, setState] = useState<BrandsState>({
     brands: [],
     currentBrand: null,
+    selectedBrandId: getStoredBrandId(),
     loading: false,
     error: null,
   });
@@ -30,8 +54,20 @@ export function useBrands() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const brands = await getUserBrands(userId);
-      setState((prev) => ({ ...prev, brands, loading: false }));
+      setState((prev) => {
+        // Validate selectedBrandId against fetched brands
+        const storedId = prev.selectedBrandId;
+        const validId = storedId && brands.some((b) => b.id === storedId)
+          ? storedId
+          : brands.length > 0 ? brands[0].id : null;
+        if (validId !== storedId) {
+          setStoredBrandId(validId);
+        }
+        const currentBrand = validId ? brands.find((b) => b.id === validId) || null : null;
+        return { ...prev, brands, selectedBrandId: validId, currentBrand, loading: false };
+      });
     } catch (err) {
+      console.error("fetchBrands error:", err);
       setState((prev) => ({
         ...prev,
         loading: false,
@@ -40,11 +76,11 @@ export function useBrands() {
     }
   }, []);
 
-  const selectBrand = useCallback(async (brandId: string) => {
-    // 既にローカルにあるブランドを使用（Firestoreへのアクセス不要）
+  const selectBrand = useCallback((brandId: string) => {
+    setStoredBrandId(brandId);
     setState((prev) => {
       const brand = prev.brands.find((b) => b.id === brandId) || null;
-      return { ...prev, currentBrand: brand };
+      return { ...prev, selectedBrandId: brandId, currentBrand: brand };
     });
   }, []);
 
@@ -65,11 +101,19 @@ export function useBrands() {
           createdAt: new Date() as unknown as import("firebase/firestore").Timestamp,
           updatedAt: new Date() as unknown as import("firebase/firestore").Timestamp,
         };
-        setState((prev) => ({
-          ...prev,
-          brands: [...prev.brands, newBrand],
-          loading: false,
-        }));
+        setState((prev) => {
+          const isFirst = prev.brands.length === 0;
+          if (isFirst) {
+            setStoredBrandId(brandId);
+          }
+          return {
+            ...prev,
+            brands: [...prev.brands, newBrand],
+            selectedBrandId: isFirst ? brandId : prev.selectedBrandId,
+            currentBrand: isFirst ? newBrand : prev.currentBrand,
+            loading: false,
+          };
+        });
         return brandId;
       } catch (err) {
         setState((prev) => ({
@@ -118,12 +162,25 @@ export function useBrands() {
       try {
         await deleteBrand(brandId);
         // 楽観的更新: ローカルでブランドを削除
-        setState((prev) => ({
-          ...prev,
-          brands: prev.brands.filter((b) => b.id !== brandId),
-          currentBrand: prev.currentBrand?.id === brandId ? null : prev.currentBrand,
-          loading: false,
-        }));
+        setState((prev) => {
+          const remaining = prev.brands.filter((b) => b.id !== brandId);
+          const wasSelected = prev.selectedBrandId === brandId;
+          const newSelectedId = wasSelected
+            ? (remaining.length > 0 ? remaining[0].id : null)
+            : prev.selectedBrandId;
+          if (wasSelected) {
+            setStoredBrandId(newSelectedId);
+          }
+          return {
+            ...prev,
+            brands: remaining,
+            selectedBrandId: newSelectedId,
+            currentBrand: wasSelected
+              ? (newSelectedId ? remaining.find((b) => b.id === newSelectedId) || null : null)
+              : prev.currentBrand,
+            loading: false,
+          };
+        });
       } catch (err) {
         setState((prev) => ({
           ...prev,

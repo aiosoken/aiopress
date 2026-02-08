@@ -171,7 +171,7 @@ export default function BrandsPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">ブランド管理</h1>
+          <h1 className="heading-page text-foreground">ブランド管理</h1>
           <p className="text-sm text-muted-foreground mt-1">
             ブランドの作成・編集・削除ができます
           </p>
@@ -295,15 +295,15 @@ export default function BrandsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {brands.map((brand) => (
-            <Card key={brand.id} className="group relative hover:shadow-md transition-shadow">
+            <Card key={brand.id} className="group relative card-interactive">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="h-12 w-12 rounded-lg bg-foreground text-background flex items-center justify-center text-lg font-bold">
+                      {brand.name.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground truncate">{brand.name}</p>
+                      <p className="text-xl font-bold text-foreground truncate">{brand.name}</p>
                       <p className="text-sm text-muted-foreground truncate">
                         {brand.description || "説明なし"}
                       </p>

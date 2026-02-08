@@ -8,10 +8,11 @@ import type { Brand } from "@/types";
 interface BrandsContextType {
   brands: Brand[];
   currentBrand: Brand | null;
+  selectedBrandId: string | null;
   loading: boolean;
   error: string | null;
   fetchBrands: (userId: string) => Promise<void>;
-  selectBrand: (brandId: string) => Promise<void>;
+  selectBrand: (brandId: string) => void;
   addBrand: (name: string, description?: string) => Promise<string>;
   editBrand: (brandId: string, data: { name?: string; description?: string }) => Promise<void>;
   removeBrand: (brandId: string) => Promise<void>;

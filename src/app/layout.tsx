@@ -1,11 +1,16 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Noto_Sans_JP } from 'next/font/google'
 import { AuthProvider, ThemeProvider } from '@/components/providers'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  variable: "--font-noto-sans-jp",
+});
 
 export const metadata: Metadata = {
   title: 'AIOプレス | AI-Optimized Brand Communication',
@@ -19,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning className="light">
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased ${notoSansJP.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

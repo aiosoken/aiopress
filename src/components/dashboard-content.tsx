@@ -82,25 +82,21 @@ export function DashboardContent() {
         title: "ブランド数",
         value: brandsLoading ? "-" : brands.length.toString(),
         icon: Building2,
-        color: "bg-blue-500/10 text-blue-600",
       },
       {
         title: "資産数",
         value: statsLoading ? "-" : stats.totalAssets.toString(),
         icon: FolderOpen,
-        color: "bg-emerald-500/10 text-emerald-600",
       },
       {
         title: "クリエイティブ",
         value: statsLoading ? "-" : stats.totalCreatives.toString(),
         icon: Sparkles,
-        color: "bg-amber-500/10 text-amber-600",
       },
       {
         title: "ブランドDNA",
         value: statsLoading ? "-" : `${stats.designSystemProgress}%`,
         icon: Dna,
-        color: "bg-primary/10 text-primary",
       },
     ],
     [brandsLoading, brands.length, statsLoading, stats]
@@ -111,7 +107,7 @@ export function DashboardContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">ダッシュボード</h1>
+          <h1 className="heading-page text-foreground">ダッシュボード</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {firebaseUser?.displayName || "ユーザー"}さん、おかえりなさい
           </p>
@@ -132,11 +128,9 @@ export function DashboardContent() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-semibold text-foreground mt-1">{stat.value}</p>
+                  <p className="text-4xl font-black text-foreground mt-1">{stat.value}</p>
                 </div>
-                <div className={`p-2.5 rounded-lg ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
+                <stat.icon className="h-5 w-5 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -178,8 +172,8 @@ export function DashboardContent() {
                     key={brand.id}
                     className="flex items-center gap-4 px-6 py-3 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <Building2 className="h-5 w-5 text-primary" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-foreground text-background text-sm font-bold">
+                      {brand.name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
@@ -250,27 +244,27 @@ export function DashboardContent() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent card-interactive" asChild>
                 <Link href="/assets">
-                  <Upload className="h-5 w-5 text-primary" />
+                  <Upload className="h-5 w-5 text-foreground" />
                   <span className="text-sm">資産アップロード</span>
                 </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent card-interactive" asChild>
                 <Link href="/creatives">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Sparkles className="h-5 w-5 text-foreground" />
                   <span className="text-sm">コンテンツ生成</span>
                 </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent card-interactive" asChild>
                 <Link href="/design-system">
-                  <Dna className="h-5 w-5 text-primary" />
+                  <Dna className="h-5 w-5 text-foreground" />
                   <span className="text-sm">ブランドDNA</span>
                 </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent" asChild>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 bg-transparent card-interactive" asChild>
                 <Link href="/brands/new">
-                  <Plus className="h-5 w-5 text-primary" />
+                  <Plus className="h-5 w-5 text-foreground" />
                   <span className="text-sm">新規ブランド</span>
                 </Link>
               </Button>
@@ -311,7 +305,7 @@ export function DashboardContent() {
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border">
                       {getTypeIcon(creative.type)}
                     </div>
                     <div>

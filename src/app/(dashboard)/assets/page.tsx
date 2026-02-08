@@ -50,7 +50,7 @@ export default function AssetsPage() {
   const searchParams = useSearchParams();
   const brandIdParam = searchParams.get("brandId");
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading } = useBrandsContext();
+  const { brands, selectedBrandId, selectBrand, loading: brandsLoading } = useBrandsContext();
   const {
     assets,
     loading: assetsLoading,
@@ -59,7 +59,6 @@ export default function AssetsPage() {
     uploadNewAsset,
     removeAsset,
   } = useAssets();
-  const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -68,8 +67,8 @@ export default function AssetsPage() {
   const [filterType, setFilterType] = useState<string>("all");
 
   useEffect(() => {
-    if (brandIdParam) {
-      setSelectedBrandId(brandIdParam);
+    if (brandIdParam && brandIdParam !== selectedBrandId) {
+      selectBrand(brandIdParam);
     }
   }, [brandIdParam]);
 
@@ -216,8 +215,8 @@ export default function AssetsPage() {
         </CardHeader>
         <CardContent>
           <Select
-            value={selectedBrandId}
-            onValueChange={setSelectedBrandId}
+            value={selectedBrandId || ""}
+            onValueChange={selectBrand}
             disabled={brandsLoading}
           >
             <SelectTrigger className="w-full md:w-[300px]">

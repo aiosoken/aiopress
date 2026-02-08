@@ -111,3 +111,42 @@ export const extractBrandFromUrlFunction = httpsCallable<
     result?: import("@/types").BrandExtractionResult;
   }
 >(functions, "extractBrandFromUrl");
+
+// Epson Connect 印刷
+export const printCreativeFunction = httpsCallable<
+  {
+    creativeId: string;
+    printSettings?: import("@/types").EpsonPrintSettings;
+  },
+  {
+    success: boolean;
+    jobId?: string;
+    message?: string;
+  }
+>(functions, "printCreative");
+
+// Epson Connect 設定保存
+export const saveEpsonSettingsFunction = httpsCallable<
+  {
+    printerEmail: string;
+    clientId: string;
+    clientSecret: string;
+  },
+  {
+    success: boolean;
+    printerName?: string;
+    message?: string;
+  }
+>(functions, "saveEpsonSettings");
+
+// Epson Connect 設定取得
+export const getEpsonSettingsFunction = httpsCallable<
+  Record<string, never>,
+  {
+    success: boolean;
+    configured: boolean;
+    printerEmail?: string;
+    printerName?: string;
+    connectionStatus?: string;
+  }
+>(functions, "getEpsonSettings");
