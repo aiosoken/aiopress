@@ -1,7 +1,9 @@
 import type PptxGenJS from "pptxgenjs";
-import type { TwoColumnSlideData, RichText, ResolvedTheme } from "../types";
+import type { TwoColumnSlideData, ResolvedTheme, ColumnContent } from "../types";
 import { toTextProps } from "../utils/text";
 import { stripHash, lighten } from "../utils/color";
+import { addImagesToSlide } from "../utils/image";
+import { addShapesToSlide } from "../utils/shape";
 
 export function addTwoColumnSlide(
   pptx: PptxGenJS,
@@ -56,12 +58,32 @@ export function addTwoColumnSlide(
   });
 
   renderColumn(pptx, slide, data.right, 0.6 + colW + colGap, colY, colW, colH, theme);
+
+  // 左側の画像を追加
+  if (data.left.images && data.left.images.length > 0) {
+    addImagesToSlide(slide, data.left.images);
+  }
+
+  // 左側の図形を追加
+  if (data.left.shapes && data.left.shapes.length > 0) {
+    addShapesToSlide(pptx, slide, data.left.shapes);
+  }
+
+  // 右側の画像を追加
+  if (data.right.images && data.right.images.length > 0) {
+    addImagesToSlide(slide, data.right.images);
+  }
+
+  // 右側の図形を追加
+  if (data.right.shapes && data.right.shapes.length > 0) {
+    addShapesToSlide(pptx, slide, data.right.shapes);
+  }
 }
 
 function renderColumn(
   pptx: PptxGenJS,
   slide: PptxGenJS.Slide,
-  col: { title: string; body: string | RichText[]; accentColor?: string },
+  col: ColumnContent,
   x: number,
   y: number,
   w: number,

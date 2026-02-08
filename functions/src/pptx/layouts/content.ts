@@ -1,6 +1,8 @@
 import type PptxGenJS from "pptxgenjs";
 import type { ContentSlideData, ResolvedTheme } from "../types";
 import { toTextProps } from "../utils/text";
+import { addImagesToSlide } from "../utils/image";
+import { addShapesToSlide } from "../utils/shape";
 
 export function addContentSlide(
   pptx: PptxGenJS,
@@ -71,6 +73,16 @@ export function addContentSlide(
     valign: "top",
     paraSpaceAfter: 6,
   });
+
+  // 画像を追加
+  if (data.images && data.images.length > 0) {
+    addImagesToSlide(slide, data.images);
+  }
+
+  // 図形を追加
+  if (data.shapes && data.shapes.length > 0) {
+    addShapesToSlide(pptx, slide, data.shapes);
+  }
 
   if (data.notes) {
     slide.addNotes(data.notes);
