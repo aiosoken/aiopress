@@ -137,7 +137,8 @@ export default function AssetsPage() {
     const matchesType = filterType === "all" ||
       (filterType === "image" && asset.fileType.startsWith("image/")) ||
       (filterType === "pdf" && (asset.fileType === "application/pdf" || asset.fileName.endsWith(".pdf"))) ||
-      (filterType === "other" && !asset.fileType.startsWith("image/") && asset.fileType !== "application/pdf");
+      (filterType === "markdown" && (asset.fileType === "text/markdown" || asset.fileType === "text/x-markdown" || asset.fileName.endsWith(".md"))) ||
+      (filterType === "other" && !asset.fileType.startsWith("image/") && asset.fileType !== "application/pdf" && asset.fileType !== "text/markdown" && asset.fileType !== "text/x-markdown" && !asset.fileName.endsWith(".md"));
 
     return matchesSearch && matchesType;
   });
@@ -171,7 +172,7 @@ export default function AssetsPage() {
                 <Input
                   id="file"
                   type="file"
-                  accept="image/*,.pdf,.txt,.doc,.docx"
+                  accept="image/*,.pdf,.txt,.doc,.docx,.md"
                   onChange={handleFileChange}
                 />
               </div>
@@ -269,6 +270,7 @@ export default function AssetsPage() {
                   <SelectItem value="all">すべて ({assets.length})</SelectItem>
                   <SelectItem value="image">画像</SelectItem>
                   <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="markdown">Markdown</SelectItem>
                   <SelectItem value="other">その他</SelectItem>
                 </SelectContent>
               </Select>
