@@ -191,8 +191,8 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between animate-fade-up">
-        <div className="page-header">
+      <div className="flex items-center justify-between">
+        <div>
           <h1 className="heading-page text-foreground">分析・レポート</h1>
           <p className="text-sm text-muted-foreground mt-2">
             クリエイティブの生成状況とブランド適合度を分析します
@@ -213,7 +213,7 @@ export default function AnalyticsPage() {
       </div>
 
       {!selectedBrandId ? (
-        <Card className="shadow-layered rounded-xl animate-fade-up delay-100">
+        <Card className="rounded-xl">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50">
               <BarChart3 className="h-10 w-10 text-muted-foreground/50" />
@@ -240,8 +240,7 @@ export default function AnalyticsPage() {
           {/* サマリーカード */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div
-              className="stat-card bg-gradient-card-orange p-5 animate-fade-up"
-              style={{ animationDelay: "0.1s" }}
+              className="stat-card bg-gradient-card-orange p-5"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -258,8 +257,7 @@ export default function AnalyticsPage() {
             </div>
 
             <div
-              className="stat-card bg-gradient-card-blue p-5 animate-fade-up"
-              style={{ animationDelay: "0.2s" }}
+              className="stat-card bg-gradient-card-blue p-5"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -278,8 +276,7 @@ export default function AnalyticsPage() {
             </div>
 
             <div
-              className="stat-card bg-gradient-card-emerald p-5 animate-fade-up"
-              style={{ animationDelay: "0.3s" }}
+              className="stat-card bg-gradient-card-emerald p-5"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -296,8 +293,7 @@ export default function AnalyticsPage() {
             </div>
 
             <div
-              className="stat-card bg-gradient-card-purple p-5 animate-fade-up"
-              style={{ animationDelay: "0.4s" }}
+              className="stat-card bg-gradient-card-purple p-5"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -314,7 +310,7 @@ export default function AnalyticsPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* タイプ別分析 */}
-            <Card className="shadow-layered rounded-xl animate-fade-up delay-200">
+            <Card className="rounded-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold">タイプ別クリエイティブ</CardTitle>
                 <CardDescription>生成タイプごとの統計情報</CardDescription>
@@ -350,7 +346,7 @@ export default function AnalyticsPage() {
             </Card>
 
             {/* スコア分布 */}
-            <Card className="shadow-layered rounded-xl animate-fade-up delay-300">
+            <Card className="rounded-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold">Brand Fit スコア分布</CardTitle>
                 <CardDescription>クリエイティブの品質分布</CardDescription>
@@ -417,7 +413,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {stats.totalCreatives > 0 && (
-                  <div className="mt-6 p-4 rounded-xl bg-gradient-warm border-l-2 border-primary">
+                  <div className="mt-6 p-4 rounded-xl bg-accent border-l-2 border-primary">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium">インサイト</span>
@@ -437,7 +433,7 @@ export default function AnalyticsPage() {
             </Card>
 
             {/* お気に入り & 公開状況 */}
-            <Card className="shadow-layered rounded-xl animate-fade-up delay-400">
+            <Card className="rounded-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold">ステータス概要</CardTitle>
                 <CardDescription>クリエイティブの公開・お気に入り状況</CardDescription>
@@ -463,7 +459,7 @@ export default function AnalyticsPage() {
             </Card>
 
             {/* 最近の生成アクティビティ */}
-            <Card className="shadow-layered rounded-xl animate-fade-up delay-500">
+            <Card className="rounded-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold">最近のアクティビティ</CardTitle>
                 <CardDescription>直近の生成履歴</CardDescription>

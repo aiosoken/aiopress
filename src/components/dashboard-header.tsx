@@ -30,7 +30,7 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border/30 bg-background/70 backdrop-blur-xl px-4 md:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -48,14 +48,14 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-9 w-9 rounded-xl"
+              className="relative h-8 w-8 rounded-lg"
             >
-              <Avatar className="h-9 w-9">
+              <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={firebaseUser?.photoURL || undefined}
                   alt={firebaseUser?.displayName || "User"}
                 />
-                <AvatarFallback className="bg-gradient-to-br from-muted to-muted/50 text-sm font-bold">
+                <AvatarFallback className="bg-muted text-sm font-medium">
                   {getInitials(firebaseUser?.displayName ?? null)}
                 </AvatarFallback>
               </Avatar>
@@ -64,7 +64,7 @@ export function DashboardHeader() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-semibold leading-none">
+                <p className="text-sm font-medium leading-none">
                   {firebaseUser?.displayName || "ユーザー"}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">

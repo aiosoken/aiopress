@@ -327,7 +327,7 @@ export default function CreativesPage() {
   };
 
   const renderCreativeCard = (creative: Creative) => (
-    <Card key={creative.id} className="shadow-layered hover:shadow-layered-lg transition-all duration-300 overflow-hidden">
+    <Card key={creative.id} className="transition-colors overflow-hidden">
       <CardContent className="p-0">
         {/* Header bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-muted/20">
@@ -434,7 +434,7 @@ export default function CreativesPage() {
         <div className="p-5">
           {/* PPTX ダウンロード */}
           {creative.type === "PRESENTATION" && creative.pptxUrl && (
-            <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/50 p-4 bg-gradient-warm">
+            <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/50 p-4 bg-accent">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
                 <Presentation className="h-5 w-5 text-amber-600" />
               </div>
@@ -504,7 +504,7 @@ export default function CreativesPage() {
 
           {/* Brand Fit Feedback */}
           {creative.metadata?.brandFitFeedback && (
-            <div className="mt-3 p-4 rounded-xl bg-gradient-warm border-l-3 border-primary text-xs text-muted-foreground" style={{ borderLeft: "3px solid var(--primary)" }}>
+            <div className="mt-3 p-4 rounded-xl bg-accent border-l-3 border-primary text-xs text-muted-foreground" style={{ borderLeft: "3px solid var(--primary)" }}>
               <span className="font-semibold text-foreground">AI評価:</span> {creative.metadata.brandFitFeedback}
             </div>
           )}
@@ -514,7 +514,7 @@ export default function CreativesPage() {
   );
 
   const renderEmptyState = (type?: CreativeType) => (
-    <Card className="shadow-layered">
+    <Card>
       <CardContent className="flex flex-col items-center justify-center py-16">
         <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
           {type ? <span className={getTypeColor(type)}>{getTypeIcon(type)}</span> : <Wand2 className="h-8 w-8 text-muted-foreground/40" />}
@@ -540,7 +540,7 @@ export default function CreativesPage() {
   const renderLoadingSkeleton = () => (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <Card key={i} className="shadow-layered">
+        <Card key={i}>
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Skeleton className="h-8 w-8 rounded-xl" />
@@ -560,8 +560,8 @@ export default function CreativesPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between animate-fade-up">
-        <div className="page-header">
+      <div className="flex items-center justify-between">
+        <div>
           <h1 className="heading-page text-foreground">クリエイティブ生成</h1>
           <p className="text-sm text-muted-foreground mt-2">
             ブランドDNAに基づいてAIが最適化されたコンテンツを生成します
@@ -569,7 +569,7 @@ export default function CreativesPage() {
         </div>
         <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!selectedBrandId} className="shadow-layered hover:shadow-layered-lg transition-shadow">
+            <Button disabled={!selectedBrandId}>
               <Plus className="mr-2 h-4 w-4" />
               新規生成
             </Button>
@@ -721,7 +721,7 @@ export default function CreativesPage() {
         </Dialog>
       </div>
 
-      <Card className="shadow-layered animate-fade-up delay-100">
+      <Card>
         <CardContent className="p-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Select
@@ -907,7 +907,7 @@ export default function CreativesPage() {
       </Dialog>
 
       {!selectedBrandId ? (
-        <Card className="shadow-layered">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50">
               <Wand2 className="h-8 w-8 text-muted-foreground/40" />
@@ -921,7 +921,7 @@ export default function CreativesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="all" className="space-y-6 animate-fade-up delay-200">
+        <Tabs defaultValue="all" className="space-y-6">
           <TabsList>
             <TabsTrigger value="all">
               すべて

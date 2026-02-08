@@ -144,7 +144,7 @@ export default function AssetsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="page-header flex items-center justify-between animate-fade-up">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="heading-page text-foreground">資産管理</h1>
           <p className="text-sm text-muted-foreground mt-2">
@@ -153,7 +153,7 @@ export default function AssetsPage() {
         </div>
         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!selectedBrandId} className="shadow-layered hover:shadow-layered-lg transition-shadow">
+            <Button disabled={!selectedBrandId}>
               <Upload className="mr-2 h-4 w-4" />
               アップロード
             </Button>
@@ -206,7 +206,7 @@ export default function AssetsPage() {
         </Dialog>
       </div>
 
-      <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.05s" }}>
+      <Card className="rounded-xl">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold">ブランドを選択</CardTitle>
           <CardDescription>
@@ -234,7 +234,7 @@ export default function AssetsPage() {
       </Card>
 
       {!selectedBrandId ? (
-        <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <Card className="rounded-xl">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="h-20 w-20 rounded-2xl bg-muted/50 flex items-center justify-center">
               <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
@@ -251,7 +251,7 @@ export default function AssetsPage() {
         <>
           {/* Search and Filter */}
           {assets.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -278,7 +278,7 @@ export default function AssetsPage() {
           {assetsLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="shadow-layered rounded-xl">
+                <Card key={i} className="rounded-xl">
                   <CardContent className="p-5">
                     <Skeleton className="h-32 w-full rounded-xl mb-4" />
                     <Skeleton className="h-4 w-3/4 mb-2" />
@@ -288,7 +288,7 @@ export default function AssetsPage() {
               ))}
             </div>
           ) : filteredAssets.length === 0 ? (
-            <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.15s" }}>
+            <Card className="rounded-xl">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <div className="h-20 w-20 rounded-2xl bg-muted/50 flex items-center justify-center">
                   <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
@@ -302,7 +302,7 @@ export default function AssetsPage() {
                     : "最初の資産をアップロードして、AIによる分析を始めましょう"}
                 </p>
                 {!searchQuery && filterType === "all" && (
-                  <Button className="mt-6 shadow-layered hover:shadow-layered-lg transition-shadow" onClick={() => setIsUploadOpen(true)}>
+                  <Button className="mt-6" onClick={() => setIsUploadOpen(true)}>
                     <Upload className="mr-2 h-4 w-4" />
                     最初の資産をアップロード
                   </Button>
@@ -310,16 +310,16 @@ export default function AssetsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-up" style={{ animationDelay: "0.15s" }}>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredAssets.map((asset) => (
-                <Card key={asset.id} className="group shadow-layered hover:shadow-layered-lg transition-all duration-300 rounded-xl overflow-hidden">
+                <Card key={asset.id} className="group transition-colors rounded-xl overflow-hidden">
                   {/* Image Thumbnail */}
                   {isImageType(asset.fileType) && asset.fileUrl && (
                     <div className="aspect-video bg-muted overflow-hidden">
                       <img
                         src={asset.fileUrl}
                         alt={asset.fileName}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover"
                         loading="lazy"
                       />
                     </div>

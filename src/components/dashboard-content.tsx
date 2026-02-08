@@ -15,7 +15,6 @@ import {
   ImageIcon,
   MessageSquare,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,47 +81,47 @@ export function DashboardContent() {
         title: "ブランド数",
         value: brandsLoading ? "-" : brands.length.toString(),
         icon: Building2,
-        gradient: "bg-gradient-card-orange",
+        border: "bg-gradient-card-blue",
         iconColor: "text-primary",
       },
       {
         title: "資産数",
         value: statsLoading ? "-" : stats.totalAssets.toString(),
         icon: FolderOpen,
-        gradient: "bg-gradient-card-blue",
-        iconColor: "text-secondary",
+        border: "bg-gradient-card-emerald",
+        iconColor: "text-emerald-500",
       },
       {
         title: "クリエイティブ",
         value: statsLoading ? "-" : stats.totalCreatives.toString(),
         icon: Sparkles,
-        gradient: "bg-gradient-card-purple",
+        border: "bg-gradient-card-purple",
         iconColor: "text-purple-500",
       },
       {
         title: "ブランドDNA",
         value: statsLoading ? "-" : `${stats.designSystemProgress}%`,
         icon: Dna,
-        gradient: "bg-gradient-card-emerald",
-        iconColor: "text-emerald-500",
+        border: "bg-gradient-card-orange",
+        iconColor: "text-amber-500",
       },
     ],
     [brandsLoading, brands.length, statsLoading, stats]
   );
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between animate-fade-up">
-        <div className="page-header">
+      <div className="flex items-center justify-between">
+        <div>
           <h1 className="heading-page text-foreground">ダッシュボード</h1>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground mt-1">
             {firebaseUser?.displayName || "ユーザー"}さん、おかえりなさい
           </p>
         </div>
-        <Button className="gap-2 shadow-layered hover:shadow-layered-lg transition-shadow" asChild>
+        <Button asChild>
           <Link href="/assets">
-            <Upload className="h-4 w-4" />
+            <Upload className="mr-2 h-4 w-4" />
             資産をアップロード
           </Link>
         </Button>
@@ -130,19 +129,15 @@ export function DashboardContent() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
-          <div
-            key={stat.title}
-            className={`stat-card ${stat.gradient} p-5 animate-fade-up`}
-            style={{ animationDelay: `${(i + 1) * 0.1}s` }}
-          >
+        {statCards.map((stat) => (
+          <div key={stat.title} className={`stat-card ${stat.border}`}>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">{stat.title}</p>
-                <p className="text-4xl font-black text-foreground mt-1 tracking-tight">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.title}</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
               </div>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50 ${stat.iconColor}`}>
-                <stat.icon className="h-5 w-5" />
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-muted ${stat.iconColor}`}>
+                <stat.icon className="h-4 w-4" />
               </div>
             </div>
           </div>
@@ -150,29 +145,29 @@ export function DashboardContent() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Brand List */}
-        <Card className="lg:col-span-2 shadow-layered animate-fade-up delay-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-base font-semibold">ブランド一覧</CardTitle>
-            <Button variant="ghost" size="sm" className="text-primary font-medium" asChild>
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-medium">ブランド一覧</CardTitle>
+            <Button variant="ghost" size="sm" className="text-primary text-sm" asChild>
               <Link href="/brands">すべて表示</Link>
             </Button>
           </CardHeader>
           <CardContent className="p-0">
             {brandsLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             ) : brands.length === 0 ? (
               <div className="text-center py-12 px-6">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-                  <Building2 className="h-8 w-8 text-muted-foreground/50" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-muted">
+                  <Building2 className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="mt-4 text-sm font-medium text-muted-foreground">
+                <p className="mt-3 text-sm text-muted-foreground">
                   まだブランドがありません
                 </p>
-                <Button className="mt-4" asChild>
+                <Button className="mt-3" size="sm" asChild>
                   <Link href="/brands/new">
                     <Plus className="mr-2 h-4 w-4" />
                     最初のブランドを作成
@@ -180,17 +175,17 @@ export function DashboardContent() {
                 </Button>
               </div>
             ) : (
-              <div className="divide-y divide-border/50">
-                {brands.slice(0, 5).map((brand, i) => (
+              <div className="divide-y divide-border">
+                {brands.slice(0, 5).map((brand) => (
                   <div
                     key={brand.id}
-                    className="flex items-center gap-4 px-6 py-3.5 hover:bg-muted/30 transition-colors group"
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-muted/50 transition-colors group"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-foreground to-foreground/80 text-background text-sm font-bold shadow-sm">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white text-sm font-medium">
                       {brand.name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {brand.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -210,14 +205,14 @@ export function DashboardContent() {
         </Card>
 
         {/* Design System Progress */}
-        <Card className="shadow-layered animate-fade-up delay-300">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold">ブランドDNA進捗</CardTitle>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">ブランドDNA進捗</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4">
             {statsLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             ) : brands.length === 0 ? (
               <div className="text-center py-6">
@@ -227,15 +222,15 @@ export function DashboardContent() {
               </div>
             ) : (
               <>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">全体の進捗</span>
-                    <span className="font-bold text-foreground">{stats.designSystemProgress}%</span>
+                    <span className="font-medium text-foreground">{stats.designSystemProgress}%</span>
                   </div>
-                  <Progress value={stats.designSystemProgress} className="h-2.5" />
+                  <Progress value={stats.designSystemProgress} className="h-2" />
                 </div>
-                <div className="rounded-xl bg-gradient-warm p-4 border border-border/30">
-                  <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-accent p-3 border border-primary/10">
+                  <div className="flex items-start gap-2">
                     <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       ブランドDNAを設定すると、AIがより適切なクリエイティブを生成できます
@@ -255,14 +250,14 @@ export function DashboardContent() {
       </div>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Quick Actions */}
-        <Card className="shadow-layered animate-fade-up delay-400">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold">クイックアクション</CardTitle>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-medium">クイックアクション</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { href: "/assets", icon: Upload, label: "資産アップロード", color: "text-primary" },
                 { href: "/creatives", icon: Sparkles, label: "コンテンツ生成", color: "text-purple-500" },
@@ -272,12 +267,12 @@ export function DashboardContent() {
                 <Button
                   key={action.href}
                   variant="outline"
-                  className="h-auto py-5 flex-col gap-2.5 bg-transparent hover:bg-muted/30 border-border/60 hover:border-border transition-all group"
+                  className="h-auto py-4 flex-col gap-2 bg-transparent hover:bg-muted/50 transition-colors"
                   asChild
                 >
                   <Link href={action.href}>
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50 ${action.color} transition-transform group-hover:scale-110`}>
-                      <action.icon className="h-5 w-5" />
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-muted ${action.color}`}>
+                      <action.icon className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-medium">{action.label}</span>
                   </Link>
@@ -288,27 +283,27 @@ export function DashboardContent() {
         </Card>
 
         {/* Recent Creatives */}
-        <Card className="shadow-layered animate-fade-up delay-500">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-base font-semibold">最近のクリエイティブ</CardTitle>
-            <Button variant="ghost" size="sm" className="text-primary font-medium" asChild>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-base font-medium">最近のクリエイティブ</CardTitle>
+            <Button variant="ghost" size="sm" className="text-primary text-sm" asChild>
               <Link href="/creatives">すべて表示</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-1">
             {statsLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             ) : stats.recentCreatives.length === 0 ? (
               <div className="text-center py-12">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-                  <Sparkles className="h-8 w-8 text-muted-foreground/50" />
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-muted">
+                  <Sparkles className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="mt-4 text-sm font-medium text-muted-foreground">
+                <p className="mt-3 text-sm text-muted-foreground">
                   まだクリエイティブがありません
                 </p>
-                <Button className="mt-4" size="sm" asChild>
+                <Button className="mt-3" size="sm" asChild>
                   <Link href="/creatives">
                     <Sparkles className="mr-2 h-4 w-4" />
                     クリエイティブを生成
@@ -319,10 +314,10 @@ export function DashboardContent() {
               stats.recentCreatives.map((creative) => (
                 <div
                   key={creative.id}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/30 transition-colors group"
+                  className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
                       {getTypeIcon(creative.type)}
                     </div>
                     <div>
@@ -334,7 +329,7 @@ export function DashboardContent() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs opacity-70 group-hover:opacity-100 transition-opacity">
+                  <Badge variant="secondary" className="text-xs">
                     {getTypeLabel(creative.type)}
                   </Badge>
                 </div>
