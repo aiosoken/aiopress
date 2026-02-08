@@ -53,10 +53,11 @@ import {
   Presentation,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { CreativeType, Creative, EpsonPrintSettings } from "@/types";
+import type { CreativeType, Creative, EpsonPrintSettings, ContentFeedback } from "@/types";
 import { generateCreativeFunction, generateImageFunction, generatePresentationFunction, printCreativeFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
-import { getBrandCreatives, updateCreative } from "@/lib/firebase/firestore";
+import { getBrandCreatives, updateCreative, addContentFeedback, updateContentFeedback, removeContentFeedback } from "@/lib/firebase/firestore";
 import { CreativeFeedbackDialog } from "@/components/features/creative-feedback";
+import { ContentFeedbackHighlight } from "@/components/features/content-feedback/ContentFeedbackHighlight";
 
 export default function CreativesPage() {
   const searchParams = useSearchParams();
@@ -502,11 +503,43 @@ export default function CreativesPage() {
           )}
 
           {/* コンテンツ表示 */}
-          <div className="rounded-xl bg-muted/20 border border-border/30 p-5">
-            <pre className="whitespace-pre-wrap text-sm text-foreground font-sans leading-relaxed">
-              {creative.content}
-            </pre>
-          </div>
+          <ContentFeedbackHighlight
+            content={creative.content}
+            feedbacks={creative.feedbacks || []}
+            onAddFeedback={async (feedback) => {
+              try {
+                await addContentFeedback(creative.id, {
+                  ...feedback,
+                  createdBy: firebaseUser?.uid || "",
+                });
+                await loadCreatives();
+                toast.success("フィードバックを追加しました");
+              } catch (error) {
+                console.error("Failed to add feedback:", error);
+                toast.error("フィードバックの追加に失敗しました");
+              }
+            }}
+            onUpdateFeedback={async (feedbackId, updates) => {
+              try {
+                await updateContentFeedback(creative.id, feedbackId, updates);
+                await loadCreatives();
+                toast.success("フィードバックを更新しました");
+              } catch (error) {
+                console.error("Failed to update feedback:", error);
+                toast.error("フィードバックの更新に失敗しました");
+              }
+            }}
+            onRemoveFeedback={async (feedbackId) => {
+              try {
+                await removeContentFeedback(creative.id, feedbackId);
+                await loadCreatives();
+                toast.success("フィードバックを削除しました");
+              } catch (error) {
+                console.error("Failed to remove feedback:", error);
+                toast.error("フィードバックの削除に失敗しました");
+              }
+            }}
+          />
 
           {/* メタ情報 */}
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
