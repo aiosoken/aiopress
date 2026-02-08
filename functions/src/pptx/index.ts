@@ -17,6 +17,9 @@ import {
   addChartSlide,
   addMetricsSlide,
   addTwoColumnSlide,
+  addImageSlide,
+  addImageTextSlide,
+  addDiagramSlide,
   addEndSlide,
 } from "./layouts";
 
@@ -84,6 +87,15 @@ function renderSlide(
       break;
     case "two-column":
       addTwoColumnSlide(pptx, slide, def.data, theme);
+      break;
+    case "image":
+      addImageSlide(pptx, slide, def.data, theme);
+      break;
+    case "image-text":
+      addImageTextSlide(pptx, slide, def.data, theme);
+      break;
+    case "diagram":
+      addDiagramSlide(pptx, slide, def.data, theme);
       break;
     case "end":
       addEndSlide(pptx, slide, def.data, theme);
