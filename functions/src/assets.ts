@@ -210,13 +210,21 @@ ${visionAnalysis.labels.length > 0 ? `検出されたラベル: ${visionAnalysis
 
       console.log(`Asset ${assetId} analyzed successfully`);
     } catch (error) {
-      console.error(`Error analyzing asset ${assetId}:`, error);
-      // エラー時はステータスを失敗に更新
-      const assetDoc = await db.collection("assets").doc(assetId).get();
-      if (assetDoc.exists) {
-        await assetDoc.ref.update({
-          status: "failed",
-        });
+      console.error(`Error analyzing asset ${assetId || "(unknown)"}:`, error);
+      // エラー時はステータスを失敗に更新（assetIdが取得済みの場合のみ）
+      if (assetId) {
+        try {
+          const failedAssetDoc = await db.collection("assets").doc(assetId).get();
+          if (failedAssetDoc.exists) {
+            await failedAssetDoc.ref.update({
+              status: "failed",
+              errorMessage: error instanceof Error ? error.message : "不明なエラー",
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        } catch (updateError) {
+          console.error(`Failed to update asset ${assetId} status:`, updateError);
+        }
       }
     }
   });

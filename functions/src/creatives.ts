@@ -116,6 +116,23 @@ export const generateCreative = functions
       );
     }
 
+    // タイプのバリデーション
+    const validTypes = ["CATCH_COPY", "SNS_POST", "ARTICLE", "IMAGE"];
+    if (!validTypes.includes(type)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "typeはCATCH_COPY, SNS_POST, ARTICLE, IMAGEのいずれかである必要があります"
+      );
+    }
+
+    // promptの長さ制限
+    if (typeof prompt !== "string" || prompt.length > 5000) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "promptは5000文字以内で入力してください"
+      );
+    }
+
     // ブランドメンバーシップを確認
     await verifyBrandMember(brandId, context.auth.uid);
 
@@ -308,6 +325,23 @@ export const generateImage = functions
       throw new functions.https.HttpsError(
         "invalid-argument",
         "brandIdとpromptが必要です"
+      );
+    }
+
+    // promptの長さ制限
+    if (typeof prompt !== "string" || prompt.length > 5000) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "promptは5000文字以内で入力してください"
+      );
+    }
+
+    // aspectRatioのバリデーション
+    const validAspectRatios = ["1:1", "16:9", "9:16", "4:3", "3:4"];
+    if (aspectRatio && !validAspectRatios.includes(aspectRatio)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "aspectRatioが無効です"
       );
     }
 

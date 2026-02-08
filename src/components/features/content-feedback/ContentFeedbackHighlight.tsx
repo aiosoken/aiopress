@@ -83,11 +83,11 @@ export function ContentFeedbackHighlight({
   const getFlagColor = (flag: FeedbackFlag) => {
     switch (flag) {
       case "approved":
-        return "bg-emerald-100 text-emerald-700 border-emerald-300";
+        return "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700";
       case "needs_revision":
-        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+        return "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700";
       case "rejected":
-        return "bg-red-100 text-red-700 border-red-300";
+        return "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700";
     }
   };
 
@@ -163,7 +163,7 @@ export function ContentFeedbackHighlight({
             transform: "translate(-50%, -100%)",
           }}
         >
-          <div className="bg-white rounded-lg shadow-lg border border-border p-2 flex gap-1">
+          <div className="bg-background rounded-lg shadow-lg border border-border p-2 flex gap-1">
             <Button
               size="sm"
               variant="ghost"
@@ -206,7 +206,7 @@ export function ContentFeedbackHighlight({
       {/* Feedback Detail Dialog */}
       {selectedFeedback && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+          <div className="bg-background rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">フィードバック詳細</h3>
               <Button

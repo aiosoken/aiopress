@@ -119,6 +119,14 @@ export const generatePresentation = functions
       );
     }
 
+    // promptの長さ制限
+    if (typeof prompt !== "string" || prompt.length > 5000) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "promptは5000文字以内で入力してください"
+      );
+    }
+
     await verifyBrandMember(brandId, context.auth.uid);
 
     // デザインシステムとブランド情報を並列取得
@@ -134,7 +142,8 @@ export const generatePresentation = functions
 
     const brandContext = buildBrandContext(brand, designSystem);
 
-    const targetSlideCount = slideCount || 7;
+    // slideCountのバリデーション（3〜20枚）
+    const targetSlideCount = Math.min(20, Math.max(3, Number(slideCount) || 7));
 
     // Gemini APIでスライド構成JSONを生成
     const model = vertexAI.getGenerativeModel({

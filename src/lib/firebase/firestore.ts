@@ -339,7 +339,7 @@ export async function addContentFeedback(
   const newFeedback: ContentFeedback = {
     ...feedback,
     id: `fb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    createdAt: serverTimestamp() as Timestamp,
+    createdAt: Timestamp.now(),
   };
 
   const feedbacks = creative.feedbacks || [];

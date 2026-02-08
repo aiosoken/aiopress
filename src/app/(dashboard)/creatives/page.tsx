@@ -56,6 +56,7 @@ import { toast } from "sonner";
 import type { CreativeType, Creative, EpsonPrintSettings, ContentFeedback } from "@/types";
 import { generateCreativeFunction, generateImageFunction, generatePresentationFunction, printCreativeFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
 import { getBrandCreatives, updateCreative, addContentFeedback, updateContentFeedback, removeContentFeedback } from "@/lib/firebase/firestore";
+import { CreativeFeedbackDialog } from "@/components/features/creative-feedback";
 import { ContentFeedbackHighlight } from "@/components/features/content-feedback/ContentFeedbackHighlight";
 
 export default function CreativesPage() {
@@ -84,6 +85,8 @@ export default function CreativesPage() {
     color_mode: "color",
     copies: 1,
   });
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState<Creative | null>(null);
 
   useEffect(() => {
     getEpsonSettingsFunction({}).then((res) => {
@@ -236,6 +239,15 @@ export default function CreativesPage() {
       copies: 1,
     });
     setIsPrintOpen(true);
+  };
+
+  const openFeedbackDialog = (creative: Creative) => {
+    setFeedbackTarget(creative);
+    setIsFeedbackOpen(true);
+  };
+
+  const handleFeedbackApplied = async () => {
+    await fetchCreatives();
   };
 
   const copyToClipboard = (text: string) => {
@@ -421,6 +433,15 @@ export default function CreativesPage() {
                 <Printer className="h-4 w-4" />
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-purple-600 hover:bg-purple-500/10"
+              title="フィードバック"
+              onClick={() => openFeedbackDialog(creative)}
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -999,6 +1020,16 @@ export default function CreativesPage() {
             )
           )}
         </Tabs>
+      )}
+
+      {/* フィードバックダイアログ */}
+      {feedbackTarget && (
+        <CreativeFeedbackDialog
+          creative={feedbackTarget}
+          open={isFeedbackOpen}
+          onOpenChange={setIsFeedbackOpen}
+          onApplied={handleFeedbackApplied}
+        />
       )}
     </div>
   );
