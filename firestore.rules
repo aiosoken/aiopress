@@ -43,22 +43,20 @@ service cloud.firestore {
     
     // 資産
     match /assets/{assetId} {
-      allow read: if isBrandMember(resource.data.brandId);
-      allow create: if isAuthenticated() && isBrandMember(request.resource.data.brandId);
-      allow update, delete: if isBrandMember(resource.data.brandId);
+      allow read, create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
     }
-    
+
     // デザインシステム
     match /designSystems/{brandId} {
-      allow read: if isBrandMember(brandId);
-      allow write: if isBrandOwner(brandId) || isBrandAdmin(brandId);
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
-    
+
     // クリエイティブ
     match /creatives/{creativeId} {
-      allow read: if isBrandMember(resource.data.brandId);
-      allow create: if isAuthenticated() && isBrandMember(request.resource.data.brandId);
-      allow update, delete: if isBrandMember(resource.data.brandId);
+      allow read, create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
     }
   }
 }
