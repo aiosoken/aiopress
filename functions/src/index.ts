@@ -20,5 +20,8 @@ export { deleteAccount } from "./account";
 // プレゼンテーション生成関数
 export { generatePresentation } from "./presentations";
 
-// 印刷関連関数（Epson Connect）
+// 印刷関連関数(Epson Connect)
 export { printCreative, saveEpsonSettings, getEpsonSettings } from "./printing";
+
+// フィードバック関連関数
+export { sendCreativeFeedback, applyCreativeImprovement, getCreativeFeedback } from "./feedback";
