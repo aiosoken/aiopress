@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { VertexAI } from "@google-cloud/vertexai";
+import { verifyBrandMember } from "./utils";
 
 const db = admin.firestore();
 const storage = admin.storage();
@@ -47,7 +48,7 @@ async function calculateBrandFitScore(
 ): Promise<{ score: number; feedback: string }> {
   try {
     const model = vertexAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash",
       generationConfig: {
         maxOutputTokens: 512,
         temperature: 0.3,
@@ -116,17 +117,7 @@ export const generateCreative = functions
     }
 
     // ブランドメンバーシップを確認
-    const memberDoc = await db
-      .collection("brandMembers")
-      .doc(`${brandId}_${context.auth.uid}`)
-      .get();
-
-    if (!memberDoc.exists) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "ブランドメンバーではありません"
-      );
-    }
+    await verifyBrandMember(brandId, context.auth.uid);
 
     // デザインシステムとブランド情報を並列取得
     const [designSystemDoc, brandDoc] = await Promise.all([
@@ -184,7 +175,7 @@ export const generateCreative = functions
     const config = typeConfig[type] || typeConfig.CATCH_COPY;
 
     const model = vertexAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash",
       generationConfig: {
         maxOutputTokens: config.maxTokens,
         temperature: config.temperature,
@@ -263,7 +254,7 @@ JSONのみを出力し、それ以外のテキストは含めないでくださ�
         content: displayContent,
         parsedContent: parsedContent,
         metadata: {
-          model: "gemini-1.5-pro",
+          model: "gemini-2.0-flash",
           parameters: {
             maxOutputTokens: config.maxTokens,
             temperature: config.temperature,
@@ -321,17 +312,7 @@ export const generateImage = functions
     }
 
     // ブランドメンバーシップを確認
-    const memberDoc = await db
-      .collection("brandMembers")
-      .doc(`${brandId}_${context.auth.uid}`)
-      .get();
-
-    if (!memberDoc.exists) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "ブランドメンバーではありません"
-      );
-    }
+    await verifyBrandMember(brandId, context.auth.uid);
 
     // デザインシステムとブランド情報を並列取得
     const [designSystemDoc, brandDoc] = await Promise.all([
@@ -346,7 +327,7 @@ export const generateImage = functions
 
     // まずGeminiでプロンプトを最適化
     const model = vertexAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash",
     });
 
     const brandContext = buildBrandContext(brand, designSystem);

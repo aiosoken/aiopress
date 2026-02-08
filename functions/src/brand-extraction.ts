@@ -1,9 +1,7 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
 import { VertexAI } from "@google-cloud/vertexai";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
-
-const db = admin.firestore();
+import { verifyBrandMember } from "./utils";
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "aiopress";
 const LOCATION = process.env.GOOGLE_CLOUD_LOCATION || "asia-northeast1";
@@ -213,16 +211,7 @@ export const extractBrandFromFile = functions
     }
 
     if (brandId) {
-      const memberDoc = await db
-        .collection("brandMembers")
-        .doc(`${brandId}_${context.auth.uid}`)
-        .get();
-      if (!memberDoc.exists) {
-        throw new functions.https.HttpsError(
-          "permission-denied",
-          "ブランドメンバーではありません"
-        );
-      }
+      await verifyBrandMember(brandId, context.auth.uid);
     }
 
     try {
@@ -401,16 +390,7 @@ export const extractBrandFromUrl = functions
     }
 
     if (brandId) {
-      const memberDoc = await db
-        .collection("brandMembers")
-        .doc(`${brandId}_${context.auth.uid}`)
-        .get();
-      if (!memberDoc.exists) {
-        throw new functions.https.HttpsError(
-          "permission-denied",
-          "ブランドメンバーではありません"
-        );
-      }
+      await verifyBrandMember(brandId, context.auth.uid);
     }
 
     try {
