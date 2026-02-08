@@ -74,14 +74,14 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-orange-700 shadow-[0_2px_8px_rgba(242,85,51,0.3)]">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-sidebar-foreground">
+            <h1 className="text-base font-bold text-sidebar-foreground tracking-tight">
               AIOプレス
             </h1>
-            <p className="text-xs text-sidebar-foreground/50">
+            <p className="text-[10px] text-sidebar-foreground/40 font-medium tracking-wider uppercase">
               AI-Optimized Press
             </p>
           </div>
@@ -90,7 +90,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/40 px-4 py-2">
+          <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/30 px-4 py-2 uppercase tracking-wider">
             ブランド選択
           </SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
@@ -101,16 +101,16 @@ export function AppSidebar() {
             ) : selectedBrand ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 hover:bg-sidebar-accent transition-colors">
+                  <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-sidebar-accent transition-colors">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs font-medium">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-xs font-bold">
                         {getBrandInitials(selectedBrand.name)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="flex-1 text-left text-sm font-medium text-sidebar-foreground truncate">
                       {selectedBrand.name}
                     </span>
-                    <ChevronDown className="h-4 w-4 text-sidebar-foreground/40" />
+                    <ChevronDown className="h-4 w-4 text-sidebar-foreground/30" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
@@ -139,7 +139,7 @@ export function AppSidebar() {
             ) : (
               <Link
                 href="/brands/new"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 hover:bg-sidebar-accent transition-colors text-primary"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-sidebar-accent transition-colors text-primary"
               >
                 <Plus className="h-4 w-4" />
                 <span className="text-sm font-medium">ブランドを作成</span>
@@ -149,7 +149,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/40 px-4 py-2">
+          <SidebarGroupLabel className="text-[10px] font-semibold text-sidebar-foreground/30 px-4 py-2 uppercase tracking-wider">
             メニュー
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -161,11 +161,18 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      className={`gap-3 ${isActive ? "border-l-2 border-sidebar-primary" : ""}`}
+                      className={`gap-3 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-sidebar-primary/10 text-sidebar-primary font-semibold"
+                          : "hover:bg-sidebar-accent"
+                      }`}
                     >
                       <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
+                        <item.icon className={`h-4 w-4 ${isActive ? "text-sidebar-primary" : ""}`} />
                         <span>{item.label}</span>
+                        {isActive && (
+                          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -180,15 +187,15 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarImage src={firebaseUser?.photoURL || undefined} />
-            <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-sm font-medium">
+            <AvatarFallback className="bg-gradient-to-br from-sidebar-accent to-sidebar-accent/50 text-sidebar-foreground text-sm font-bold">
               {getInitials(firebaseUser?.displayName ?? null)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">
+            <p className="text-sm font-semibold text-sidebar-foreground truncate">
               {firebaseUser?.displayName || "ユーザー"}
             </p>
-            <p className="text-xs text-sidebar-foreground/50 truncate">
+            <p className="text-[11px] text-sidebar-foreground/40 truncate">
               {firebaseUser?.email || ""}
             </p>
           </div>

@@ -124,17 +124,17 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div>
+      <div className="page-header animate-fade-up">
         <h1 className="heading-page text-foreground">設定</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-2">
           アカウント設定とプロフィールを管理します
         </p>
       </div>
 
       <div className="grid gap-6">
-        <Card>
+        <Card className="shadow-layered animate-fade-up delay-100">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-medium">プロフィール</CardTitle>
+            <CardTitle className="text-base font-semibold">プロフィール</CardTitle>
             <CardDescription>
               あなたのプロフィール情報を管理します
             </CardDescription>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                   src={firebaseUser?.photoURL || undefined}
                   alt={firebaseUser?.displayName || "User"}
                 />
-                <AvatarFallback className="text-2xl">
+                <AvatarFallback className="text-2xl bg-gradient-to-br from-muted to-muted/50 font-bold">
                   {getInitials(firebaseUser?.displayName || null)}
                 </AvatarFallback>
               </Avatar>
@@ -198,9 +198,9 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-layered animate-fade-up delay-200">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-medium">アカウント情報</CardTitle>
+            <CardTitle className="text-base font-semibold">アカウント情報</CardTitle>
             <CardDescription>
               アカウントの詳細情報
             </CardDescription>
@@ -237,12 +237,14 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-layered animate-fade-up delay-300">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Printer className="h-4 w-4" />
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/10">
+                    <Printer className="h-3.5 w-3.5 text-blue-500" />
+                  </div>
                   Epson Connect
                 </CardTitle>
                 <CardDescription>
@@ -275,7 +277,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {epsonConnected && (
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-4">
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/20 p-4 border border-emerald-200/50">
                 <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
                   プリンター: {epsonPrinterName || epsonPrinterEmail}
                 </p>
@@ -347,9 +349,9 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/20">
+        <Card className="border-destructive/20 shadow-layered animate-fade-up delay-400">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-medium text-destructive">危険な操作</CardTitle>
+            <CardTitle className="text-base font-semibold text-destructive">危険な操作</CardTitle>
             <CardDescription>
               これらの操作は取り消すことができません
             </CardDescription>

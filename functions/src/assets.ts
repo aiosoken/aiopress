@@ -69,7 +69,13 @@ export const onAssetUpload = functions
         status: "processing",
       });
 
-      // GCS URIを構築（Vertex AIが直接読める形式）
+      // Cloud Storageからファイルをダウンロード（インラインデータとしてGeminiに送信するため）
+      const bucket = admin.storage().bucket(object.bucket);
+      const file = bucket.file(filePath);
+      const [fileBuffer] = await file.download();
+      const fileBase64 = fileBuffer.toString("base64");
+
+      // GCS URIも構築（Vision AI用）
       const gcsUri = `gs://${object.bucket}/${filePath}`;
 
       // Vision AIで画像分析
@@ -134,11 +140,12 @@ ${visionAnalysis.labels.length > 0 ? `検出されたラベル: ${visionAnalysis
 
       const parts: any[] = [{ text: analysisPrompt }];
 
-      // 画像またはPDFの場合、Geminiにファイルデータを送信
+      // 画像またはPDFの場合、インラインBase64データとしてGeminiに送信
+      // （GCS URIだとVertex AIサービスエージェントの権限問題が発生するため）
       if (object.contentType?.startsWith("image/") || object.contentType === "application/pdf") {
         parts.push({
-          fileData: {
-            fileUri: gcsUri,
+          inlineData: {
+            data: fileBase64,
             mimeType: object.contentType,
           },
         });
