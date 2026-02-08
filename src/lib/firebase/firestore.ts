@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -11,6 +12,7 @@ import {
   orderBy,
   serverTimestamp,
   documentId,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "./config";
 import type {
@@ -42,7 +44,7 @@ export async function createBrand(
     updatedAt: serverTimestamp(),
   });
 
-  await addDoc(collection(checkDbInit(), "brandMembers"), {
+  await setDoc(doc(checkDbInit(), "brandMembers", `${brandRef.id}_${ownerId}`), {
     brandId: brandRef.id,
     userId: ownerId,
     role: "OWNER" as BrandRole,
@@ -118,13 +120,14 @@ export async function addBrandMember(
   userId: string,
   role: BrandRole
 ): Promise<string> {
-  const memberRef = await addDoc(collection(checkDbInit(), "brandMembers"), {
+  const memberId = `${brandId}_${userId}`;
+  await setDoc(doc(checkDbInit(), "brandMembers", memberId), {
     brandId,
     userId,
     role,
     joinedAt: serverTimestamp(),
   });
-  return memberRef.id;
+  return memberId;
 }
 
 export async function updateBrandMemberRole(
@@ -203,6 +206,29 @@ export async function getBrandAssets(brandId: string): Promise<Asset[]> {
     console.error("Firestore getBrandAssets error:", error);
     throw error;
   }
+}
+
+export function subscribeToBrandAssets(
+  brandId: string,
+  onUpdate: (assets: Asset[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  const assetsQuery = query(
+    collection(checkDbInit(), "assets"),
+    where("brandId", "==", brandId),
+    orderBy("createdAt", "desc")
+  );
+  return onSnapshot(
+    assetsQuery,
+    (snapshot) => {
+      const assets = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Asset));
+      onUpdate(assets);
+    },
+    (error) => {
+      console.error("Assets subscription error:", error);
+      onError?.(error);
+    }
+  );
 }
 
 export async function updateAsset(

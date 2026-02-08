@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
-  getBrandAssets,
+  subscribeToBrandAssets,
   createAsset,
   updateAsset,
   deleteAsset,
@@ -28,21 +28,41 @@ export function useAssets() {
   });
   const brandIdRef = useRef<string | null>(null);
   const assetsRef = useRef<Asset[]>([]);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  const fetchAssets = useCallback(async (brandId: string) => {
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, []);
+
+  const fetchAssets = useCallback((brandId: string) => {
+    // 前のリスナーを解除
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+
     brandIdRef.current = brandId;
     setState((prev) => ({ ...prev, loading: true, error: null }));
-    try {
-      const assets = await getBrandAssets(brandId);
-      assetsRef.current = assets;
-      setState((prev) => ({ ...prev, assets, loading: false }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to fetch assets",
-      }));
-    }
+
+    // リアルタイムリスナーを設定
+    unsubscribeRef.current = subscribeToBrandAssets(
+      brandId,
+      (assets) => {
+        assetsRef.current = assets;
+        setState((prev) => ({ ...prev, assets, loading: false }));
+      },
+      (error) => {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error.message || "Failed to fetch assets",
+        }));
+      }
+    );
   }, []);
 
   // ローカルキャッシュから選択（APIコール不要）
@@ -62,7 +82,6 @@ export function useAssets() {
       brandIdRef.current = brandId;
       setState((prev) => ({ ...prev, uploading: true, error: null }));
       try {
-        // アセットIDを先に生成（Cloud Functionsで使用）
         const assetId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const { storagePath, downloadUrl } = await uploadAsset(
           brandId,
@@ -80,7 +99,7 @@ export function useAssets() {
           file.size
         );
 
-        await fetchAssets(brandId);
+        // リアルタイムリスナーが自動的に更新するので fetchAssets 不要
         setState((prev) => ({ ...prev, uploading: false }));
         return assetId;
       } catch (err) {
@@ -94,7 +113,7 @@ export function useAssets() {
         throw err;
       }
     },
-    [fetchAssets]
+    []
   );
 
   // 楽観的更新（全データ再取得しない）
@@ -102,18 +121,7 @@ export function useAssets() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       await updateAsset(assetId, data);
-      // 楽観的更新：ローカルのstateを直接更新
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        assets: prev.assets.map((a) =>
-          a.id === assetId ? { ...a, ...data } : a
-        ),
-        currentAsset:
-          prev.currentAsset?.id === assetId
-            ? { ...prev.currentAsset, ...data }
-            : prev.currentAsset,
-      }));
+      setState((prev) => ({ ...prev, loading: false }));
     } catch (err) {
       setState((prev) => ({
         ...prev,
@@ -124,27 +132,16 @@ export function useAssets() {
     }
   }, []);
 
-  // 楽観的更新（全データ再取得しない）
   const removeAsset = useCallback(async (assetId: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      // refからstoragePathを取得（API呼び出し不要）
       const asset = assetsRef.current.find((a) => a.id === assetId);
       if (asset?.storagePath) {
         await deleteFile(asset.storagePath);
       }
       await deleteAsset(assetId);
-
-      // refも更新
-      assetsRef.current = assetsRef.current.filter((a) => a.id !== assetId);
-
-      // 楽観的更新：ローカルのstateから削除
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        assets: prev.assets.filter((a) => a.id !== assetId),
-        currentAsset: prev.currentAsset?.id === assetId ? null : prev.currentAsset,
-      }));
+      // リアルタイムリスナーが自動的に更新
+      setState((prev) => ({ ...prev, loading: false }));
     } catch (err) {
       setState((prev) => ({
         ...prev,
