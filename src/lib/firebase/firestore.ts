@@ -11,7 +11,6 @@ import {
   where,
   orderBy,
   serverTimestamp,
-  documentId,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "./config";
@@ -67,29 +66,17 @@ export async function getUserBrands(userId: string): Promise<Brand[]> {
   );
   const membersSnapshot = await getDocs(membersQuery);
 
-  const brandIds = membersSnapshot.docs.map((doc) => doc.data().brandId);
+  const brandIds = membersSnapshot.docs.map((d) => d.data().brandId);
   if (brandIds.length === 0) return [];
 
-  // inクエリで一括取得（最大30件、N+1問題を解消）
-  // 30件を超える場合は分割して取得
-  const brands: Brand[] = [];
-  const chunks = [];
-  for (let i = 0; i < brandIds.length; i += 30) {
-    chunks.push(brandIds.slice(i, i + 30));
-  }
+  // 個別getDoc（セキュリティルールのexists()がlist操作で失敗するため）
+  const brandDocs = await Promise.all(
+    brandIds.map((id) => getDoc(doc(checkDbInit(), "brands", id)))
+  );
 
-  for (const chunk of chunks) {
-    const brandsQuery = query(
-      collection(checkDbInit(), "brands"),
-      where(documentId(), "in", chunk)
-    );
-    const brandsSnapshot = await getDocs(brandsQuery);
-    brandsSnapshot.docs.forEach((doc) => {
-      brands.push({ id: doc.id, ...doc.data() } as Brand);
-    });
-  }
-
-  return brands;
+  return brandDocs
+    .filter((d) => d.exists())
+    .map((d) => ({ id: d.id, ...d.data() } as Brand));
 }
 
 export async function updateBrand(

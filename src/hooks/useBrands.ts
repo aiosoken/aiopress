@@ -67,7 +67,6 @@ export function useBrands() {
         return { ...prev, brands, selectedBrandId: validId, currentBrand, loading: false };
       });
     } catch (err) {
-      console.error("fetchBrands error:", err);
       setState((prev) => ({
         ...prev,
         loading: false,
