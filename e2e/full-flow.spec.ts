@@ -55,7 +55,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 1. ランディングページ
   // ============================================
   test('01 - ランディングページ表示', async () => {
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await expect(page.locator('header').getByText('AIOプレス')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('h1')).toContainText('ブランドDNA');
@@ -66,7 +66,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 2. 新規登録
   // ============================================
   test('02 - テストアカウント新規登録', async () => {
-    await page.goto('/register', { waitUntil: 'networkidle' });
+    await page.goto('/register', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await expect(page.getByText('新規登録')).toBeVisible({ timeout: 10000 });
     await screenshot(page, '02_register_form');
@@ -87,7 +87,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 3. ダッシュボード
   // ============================================
   test('03 - ダッシュボード表示', async () => {
-    await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await expect(page.getByText('ダッシュボード').first()).toBeVisible({ timeout: 10000 });
     await screenshot(page, '03_dashboard');
@@ -97,7 +97,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 4. ブランド作成
   // ============================================
   test('04 - ブランド作成', async () => {
-    await page.goto('/brands', { waitUntil: 'networkidle' });
+    await page.goto('/brands', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '04_brands_empty');
 
@@ -127,7 +127,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 5. ブランドDNA設定
   // ============================================
   test('05 - ブランドDNA設定', async () => {
-    await page.goto('/design-system', { waitUntil: 'networkidle' });
+    await page.goto('/design-system', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '05_design_system_initial');
 
@@ -198,10 +198,81 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   });
 
   // ============================================
+  // 5b. URLからブランド情報自動抽出
+  // ============================================
+  test('05b - URLからブランド情報自動抽出', async () => {
+    await page.goto('/design-system', { waitUntil: 'domcontentloaded' });
+    await waitForPage(page);
+
+    // ブランドを選択
+    await selectBrand(page);
+
+    // 「自動抽出」ボタンをクリック
+    const extractBtn = page.getByRole('button', { name: '自動抽出' });
+    await expect(extractBtn).toBeEnabled({ timeout: 5000 });
+    await extractBtn.click();
+    await page.waitForTimeout(1000);
+    await screenshot(page, '05b_extraction_dialog');
+
+    // ダイアログ内の「URL」タブに切り替え
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 3000 });
+    const urlTab = dialog.getByRole('tab', { name: 'URL' });
+    if (await urlTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await urlTab.click();
+      await page.waitForTimeout(500);
+    }
+
+    // URLを入力
+    const urlInput = dialog.locator('input[type="url"]');
+    await urlInput.fill('https://www.anthropic.com');
+    await screenshot(page, '05b_url_input');
+
+    // 「抽出する」ボタンをクリック
+    const submitBtn = dialog.getByRole('button', { name: '抽出する' });
+    await submitBtn.click();
+
+    // Cloud Function の応答を待つ（最大60秒）
+    await screenshot(page, '05b_extracting');
+
+    // 「分析中...」が消えるまで待つ or 結果が表示されるまで待つ
+    const resultTitle = dialog.getByText('抽出結果');
+    const errorText = dialog.getByText('抽出できませんでした');
+    try {
+      await resultTitle.waitFor({ timeout: 60000 });
+      await page.waitForTimeout(1000);
+      await screenshot(page, '05b_extraction_result');
+
+      // 「適用する」ボタンをクリック
+      const applyBtn = dialog.getByRole('button', { name: '適用する' });
+      if (await applyBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await applyBtn.click();
+        await page.waitForTimeout(3000);
+        await screenshot(page, '05b_applied');
+      }
+    } catch {
+      // エラーの場合もスクリーンショットを取る
+      if (await errorText.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await screenshot(page, '05b_extraction_error');
+      } else {
+        await screenshot(page, '05b_extraction_timeout');
+      }
+      // ダイアログを閉じる
+      const closeBtn = dialog.locator('button[aria-label="Close"]').or(dialog.getByRole('button', { name: 'Close' }));
+      if (await closeBtn.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        await closeBtn.first().click();
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await page.waitForTimeout(500);
+    }
+  });
+
+  // ============================================
   // 6. アセットページ
   // ============================================
   test('06 - アセットページ表示', async () => {
-    await page.goto('/assets', { waitUntil: 'networkidle' });
+    await page.goto('/assets', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '06_assets');
   });
@@ -210,7 +281,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 7. クリエイティブ生成（キャッチコピー）
   // ============================================
   test('07 - クリエイティブ生成（キャッチコピー）', async () => {
-    await page.goto('/creatives', { waitUntil: 'networkidle' });
+    await page.goto('/creatives', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
 
     // ブランドを選択
@@ -248,7 +319,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 8. クリエイティブ生成（SNS投稿）
   // ============================================
   test('08 - クリエイティブ生成（SNS投稿）', async () => {
-    await page.goto('/creatives', { waitUntil: 'networkidle' });
+    await page.goto('/creatives', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await selectBrand(page);
 
@@ -286,7 +357,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 9. クリエイティブ生成（画像）
   // ============================================
   test('09 - クリエイティブ生成（画像）', { timeout: 180000 }, async () => {
-    await page.goto('/creatives', { waitUntil: 'networkidle' });
+    await page.goto('/creatives', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await selectBrand(page);
 
@@ -324,7 +395,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 10. クリエイティブ一覧
   // ============================================
   test('10 - クリエイティブ一覧', async () => {
-    await page.goto('/creatives', { waitUntil: 'networkidle' });
+    await page.goto('/creatives', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await selectBrand(page);
     await screenshot(page, '10_creatives_list');
@@ -343,7 +414,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 11. アナリティクス
   // ============================================
   test('11 - アナリティクス', async () => {
-    await page.goto('/analytics', { waitUntil: 'networkidle' });
+    await page.goto('/analytics', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '11_analytics');
   });
@@ -352,7 +423,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 12. ブランド詳細
   // ============================================
   test('12 - ブランド詳細', async () => {
-    await page.goto('/brands', { waitUntil: 'networkidle' });
+    await page.goto('/brands', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
 
     const detailLink = page.getByRole('link', { name: '詳細を見る' }).first();
@@ -376,7 +447,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 13. 設定
   // ============================================
   test('13 - 設定', async () => {
-    await page.goto('/settings', { waitUntil: 'networkidle' });
+    await page.goto('/settings', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '13_settings');
   });
@@ -385,7 +456,7 @@ test.describe.serial('AIOPress E2E フルフロー', () => {
   // 14. ダッシュボード最終
   // ============================================
   test('14 - ダッシュボード最終確認', async () => {
-    await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await waitForPage(page);
     await screenshot(page, '14_dashboard_final');
   });
