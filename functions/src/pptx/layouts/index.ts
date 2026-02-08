@@ -1,0 +1,8 @@
+export { addTitleSlide } from "./title";
+export { addSectionSlide } from "./section";
+export { addContentSlide } from "./content";
+export { addTableSlide } from "./table";
+export { addChartSlide } from "./chart";
+export { addMetricsSlide } from "./metrics";
+export { addTwoColumnSlide } from "./two-column";
+export { addEndSlide } from "./end";

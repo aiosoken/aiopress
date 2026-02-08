@@ -2,7 +2,7 @@ import { Timestamp } from "firebase/firestore";
 
 export type BrandRole = "OWNER" | "ADMIN" | "MEMBER";
 
-export type CreativeType = "CATCH_COPY" | "SNS_POST" | "ARTICLE" | "IMAGE";
+export type CreativeType = "CATCH_COPY" | "SNS_POST" | "ARTICLE" | "IMAGE" | "PRESENTATION";
 
 export type CreativeStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
@@ -114,6 +114,7 @@ export interface Creative {
   prompt: string;
   content: string;
   imageUrl?: string;
+  pptxUrl?: string;
   metadata: CreativeMetadata;
   isFavorite?: boolean;
   createdBy: string;

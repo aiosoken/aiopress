@@ -50,10 +50,11 @@ import {
   Archive,
   FileEdit,
   Printer,
+  Presentation,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { CreativeType, Creative, EpsonPrintSettings } from "@/types";
-import { generateCreativeFunction, generateImageFunction, printCreativeFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
+import { generateCreativeFunction, generateImageFunction, generatePresentationFunction, printCreativeFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
 import { getBrandCreatives, updateCreative } from "@/lib/firebase/firestore";
 
 export default function CreativesPage() {
@@ -65,6 +66,7 @@ export default function CreativesPage() {
   const [creativeType, setCreativeType] = useState<CreativeType>("CATCH_COPY");
   const [instruction, setInstruction] = useState("");
   const [aspectRatio, setAspectRatio] = useState("1:1");
+  const [slideCount, setSlideCount] = useState(7);
   const [isGenerating, setIsGenerating] = useState(false);
   const [creatives, setCreatives] = useState<Creative[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,7 +122,23 @@ export default function CreativesPage() {
 
     setIsGenerating(true);
     try {
-      if (creativeType === "IMAGE") {
+      if (creativeType === "PRESENTATION") {
+        // プレゼンテーション生成
+        const result = await generatePresentationFunction({
+          brandId: selectedBrandId,
+          prompt: instruction,
+          slideCount,
+        });
+
+        if (result.data.success) {
+          toast.success("プレゼンテーションを生成しました");
+          setIsGenerateOpen(false);
+          setInstruction("");
+          await fetchCreatives();
+        } else {
+          toast.error("生成に失敗しました");
+        }
+      } else if (creativeType === "IMAGE") {
         // 画像生成
         const result = await generateImageFunction({
           brandId: selectedBrandId,
@@ -245,6 +263,8 @@ export default function CreativesPage() {
         return <FileText className="h-4 w-4" />;
       case "IMAGE":
         return <ImageIcon className="h-4 w-4" />;
+      case "PRESENTATION":
+        return <Presentation className="h-4 w-4" />;
       default:
         return <Wand2 className="h-4 w-4" />;
     }
@@ -260,6 +280,8 @@ export default function CreativesPage() {
         return "記事";
       case "IMAGE":
         return "画像";
+      case "PRESENTATION":
+        return "プレゼン";
       default:
         return type;
     }
@@ -400,6 +422,28 @@ export default function CreativesPage() {
             </Button>
           </div>
         </div>
+
+        {/* PPTX ダウンロード */}
+        {creative.type === "PRESENTATION" && creative.pptxUrl && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg border p-4 bg-muted/30">
+            <Presentation className="h-8 w-8 text-primary" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">プレゼンテーションファイル</p>
+              <p className="text-xs text-muted-foreground">PowerPoint形式（.pptx）</p>
+            </div>
+            <a
+              href={creative.pptxUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+            >
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-3 w-3" />
+                ダウンロード
+              </Button>
+            </a>
+          </div>
+        )}
 
         {/* 画像表示 */}
         {creative.type === "IMAGE" && creative.imageUrl && (
@@ -558,19 +602,31 @@ export default function CreativesPage() {
                         画像生成
                       </div>
                     </SelectItem>
+                    <SelectItem value="PRESENTATION">
+                      <div className="flex items-center gap-2">
+                        <Presentation className="h-4 w-4" />
+                        プレゼンテーション（PPTX）
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="instruction">
-                  {creativeType === "IMAGE" ? "画像の説明・イメージ" : "指示・テーマ"}
+                  {creativeType === "IMAGE"
+                    ? "画像の説明・イメージ"
+                    : creativeType === "PRESENTATION"
+                    ? "プレゼンのテーマ・内容"
+                    : "指示・テーマ"}
                 </Label>
                 <Textarea
                   id="instruction"
                   placeholder={
                     creativeType === "IMAGE"
                       ? "例: 新商品の広告バナー、春らしい爽やかなイメージ"
+                      : creativeType === "PRESENTATION"
+                      ? "例: 新商品発表会、四半期業績報告、ブランド戦略提案など"
                       : "例: 新商品発売のお知らせ、春のキャンペーン告知など"
                   }
                   value={instruction}
@@ -596,6 +652,23 @@ export default function CreativesPage() {
                   </Select>
                 </div>
               )}
+
+              {creativeType === "PRESENTATION" && (
+                <div className="space-y-2">
+                  <Label>スライド枚数（目安）</Label>
+                  <Input
+                    type="number"
+                    min={3}
+                    max={20}
+                    value={slideCount}
+                    onChange={(e) =>
+                      setSlideCount(
+                        Math.max(3, Math.min(20, parseInt(e.target.value) || 7))
+                      )
+                    }
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button
@@ -612,12 +685,20 @@ export default function CreativesPage() {
                 {isGenerating ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    {creativeType === "IMAGE" ? "画像生成中..." : "生成中..."}
+                    {creativeType === "IMAGE"
+                      ? "画像生成中..."
+                      : creativeType === "PRESENTATION"
+                      ? "PPTX生成中..."
+                      : "生成中..."}
                   </>
                 ) : (
                   <>
                     <Wand2 className="mr-2 h-4 w-4" />
-                    {creativeType === "IMAGE" ? "画像を生成" : "生成"}
+                    {creativeType === "IMAGE"
+                      ? "画像を生成"
+                      : creativeType === "PRESENTATION"
+                      ? "PPTXを生成"
+                      : "生成"}
                   </>
                 )}
               </Button>
@@ -843,6 +924,7 @@ export default function CreativesPage() {
             <TabsTrigger value="SNS_POST">SNS投稿</TabsTrigger>
             <TabsTrigger value="ARTICLE">記事</TabsTrigger>
             <TabsTrigger value="IMAGE">画像</TabsTrigger>
+            <TabsTrigger value="PRESENTATION">プレゼン</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
@@ -857,7 +939,7 @@ export default function CreativesPage() {
             )}
           </TabsContent>
 
-          {(["CATCH_COPY", "SNS_POST", "ARTICLE", "IMAGE"] as CreativeType[]).map(
+          {(["CATCH_COPY", "SNS_POST", "ARTICLE", "IMAGE", "PRESENTATION"] as CreativeType[]).map(
             (type) => (
               <TabsContent key={type} value={type}>
                 {loading ? (
