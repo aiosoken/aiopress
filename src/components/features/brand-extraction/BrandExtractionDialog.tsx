@@ -25,7 +25,7 @@ interface BrandExtractionDialogProps {
   onComplete: (result: BrandExtractionResult) => void;
 }
 
-const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,.webp";
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,.webp,.md";
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 export function BrandExtractionDialog({
@@ -259,7 +259,7 @@ export function BrandExtractionDialog({
                       ドラッグ＆ドロップ、またはクリック
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      PDF / JPG / PNG / WebP（最大20MB）
+                      PDF / JPG / PNG / WebP / MD(最大20MB)
                     </p>
                   </div>
                 )}
