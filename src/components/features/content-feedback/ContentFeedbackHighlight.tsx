@@ -72,7 +72,7 @@ export function ContentFeedbackHighlight({
       endIndex: selection.end,
       selectedText: selection.text,
       flag,
-      note,
+      ...(note != null && { note }),
     });
 
     setSelection(null);
