@@ -132,7 +132,16 @@ export function CreativeFeedbackDialog({
 
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return "";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    let date: Date;
+    if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else if (timestamp._seconds) {
+      date = new Date(timestamp._seconds * 1000);
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      date = new Date(timestamp);
+    }
     return date.toLocaleTimeString("ja-JP", {
       hour: "2-digit",
       minute: "2-digit",
@@ -158,7 +167,7 @@ export function CreativeFeedbackDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[85vh] flex flex-col p-0">
+      <DialogContent className="max-w-[90vw] w-full h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">

@@ -182,6 +182,7 @@ JSONのみを出力してください。
       // メッセージを追加
       const userMessageId = `msg_${Date.now()}_user`;
       const assistantMessageId = `msg_${Date.now()}_assistant`;
+      const now = admin.firestore.Timestamp.now();
 
       const newMessages = [
         ...existingMessages,
@@ -189,14 +190,14 @@ JSONのみを出力してください。
           id: userMessageId,
           role: "user",
           content: feedbackText,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          timestamp: now,
         },
         {
           id: assistantMessageId,
           role: "assistant",
           content: analysis,
           improvedContent,
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          timestamp: now,
         },
       ];
 
@@ -303,7 +304,7 @@ export const applyCreativeImprovement = functions.https.onCall(
         if (msg.id === messageId) {
           return {
             ...msg,
-            appliedAt: admin.firestore.FieldValue.serverTimestamp(),
+            appliedAt: admin.firestore.Timestamp.now(),
           };
         }
         return msg;
