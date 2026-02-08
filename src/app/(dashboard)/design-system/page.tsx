@@ -51,8 +51,7 @@ export default function DesignSystemPage() {
   const searchParams = useSearchParams();
   const brandIdParam = searchParams.get("brandId");
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading } = useBrandsContext();
-  const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
+  const { brands, selectedBrandId, selectBrand, loading: brandsLoading } = useBrandsContext();
   const [designSystem, setDesignSystem] = useState<Partial<DesignSystem>>({
     colors: {
       primary: "#F25533",
@@ -85,8 +84,8 @@ export default function DesignSystemPage() {
   const [isExtractionDialogOpen, setIsExtractionDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (brandIdParam) {
-      setSelectedBrandId(brandIdParam);
+    if (brandIdParam && brandIdParam !== selectedBrandId) {
+      selectBrand(brandIdParam);
     }
   }, [brandIdParam]);
 
@@ -264,7 +263,7 @@ export default function DesignSystemPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">ブランドDNA / デザインシステム</h1>
+          <h1 className="heading-page text-foreground">ブランドDNA / デザインシステム</h1>
           <p className="text-sm text-muted-foreground mt-1">
             ブランドのDNA（ミッション・ビジョン・個性）とデザインシステムを管理します
           </p>
@@ -294,8 +293,8 @@ export default function DesignSystemPage() {
         </CardHeader>
         <CardContent>
           <Select
-            value={selectedBrandId}
-            onValueChange={setSelectedBrandId}
+            value={selectedBrandId || ""}
+            onValueChange={selectBrand}
             disabled={brandsLoading}
           >
             <SelectTrigger className="w-full md:w-[300px]">
@@ -346,7 +345,7 @@ export default function DesignSystemPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="md:col-span-2">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <CardTitle className="heading-section flex items-center gap-2">
                     <Target className="h-4 w-4" />
                     ミッション
                   </CardTitle>
@@ -366,7 +365,7 @@ export default function DesignSystemPage() {
 
               <Card className="md:col-span-2">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <CardTitle className="heading-section flex items-center gap-2">
                     <Sparkles className="h-4 w-4" />
                     ビジョン
                   </CardTitle>
@@ -386,7 +385,7 @@ export default function DesignSystemPage() {
 
               <Card className="md:col-span-2">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <CardTitle className="heading-section flex items-center gap-2">
                     <Heart className="h-4 w-4" />
                     提供価値（バリュープロポジション）
                   </CardTitle>
@@ -406,7 +405,7 @@ export default function DesignSystemPage() {
 
               <Card>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <CardTitle className="heading-section flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
                     ブランドパーソナリティ
                   </CardTitle>
@@ -426,7 +425,7 @@ export default function DesignSystemPage() {
 
               <Card>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <CardTitle className="heading-section flex items-center gap-2">
                     <Type className="h-4 w-4" />
                     トーン＆マナー
                   </CardTitle>
@@ -611,7 +610,7 @@ export default function DesignSystemPage() {
                           type="color"
                           value={designSystem.colors?.[key] || defaultVal}
                           onChange={(e) => handleColorChange(key, e.target.value)}
-                          className="h-10 w-10 rounded border cursor-pointer"
+                          className="h-12 w-12 rounded-lg border cursor-pointer"
                         />
                         <div className="flex-1">
                           <Label>{label}</Label>
@@ -788,7 +787,7 @@ export default function DesignSystemPage() {
       <BrandExtractionDialog
         open={isExtractionDialogOpen}
         onOpenChange={setIsExtractionDialogOpen}
-        brandId={selectedBrandId}
+        brandId={selectedBrandId ?? undefined}
         onComplete={handleExtractionComplete}
       />
     </div>

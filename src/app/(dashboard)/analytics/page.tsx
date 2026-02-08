@@ -45,18 +45,11 @@ interface TypeStats {
 
 export default function AnalyticsPage() {
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading } = useBrandsContext();
-  const [selectedBrandId, setSelectedBrandId] = useState<string>("");
+  const { brands, selectedBrandId, selectBrand, loading: brandsLoading } = useBrandsContext();
   const [creatives, setCreatives] = useState<Creative[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [designSystem, setDesignSystem] = useState<DesignSystem | null>(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (brands.length > 0 && !selectedBrandId) {
-      setSelectedBrandId(brands[0].id);
-    }
-  }, [brands, selectedBrandId]);
 
   useEffect(() => {
     if (selectedBrandId) {
@@ -200,12 +193,12 @@ export default function AnalyticsPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">分析・レポート</h1>
+          <h1 className="heading-page text-foreground">分析・レポート</h1>
           <p className="text-sm text-muted-foreground mt-1">
             クリエイティブの生成状況とブランド適合度を分析します
           </p>
         </div>
-        <Select value={selectedBrandId} onValueChange={setSelectedBrandId} disabled={brandsLoading}>
+        <Select value={selectedBrandId || ""} onValueChange={selectBrand} disabled={brandsLoading}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="ブランドを選択" />
           </SelectTrigger>
@@ -249,14 +242,12 @@ export default function AnalyticsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">クリエイティブ数</p>
-                    <p className="text-3xl font-bold mt-1">{stats.totalCreatives}</p>
+                    <p className="text-4xl font-black mt-1">{stats.totalCreatives}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       直近7日: +{stats.recentCreatives}
                     </p>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-                    <Zap className="h-5 w-5" />
-                  </div>
+                  <Zap className="h-5 w-5 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
@@ -266,16 +257,14 @@ export default function AnalyticsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">平均適合スコア</p>
-                    <p className={`text-3xl font-bold mt-1 ${scoreColor(stats.avgScore)}`}>
+                    <p className={`text-4xl font-black mt-1 ${scoreColor(stats.avgScore)}`}>
                       {stats.avgScore > 0 ? `${stats.avgScore}%` : "-"}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {stats.published}件 公開中
                     </p>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600">
-                    <Target className="h-5 w-5" />
-                  </div>
+                  <Target className="h-5 w-5 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
@@ -285,14 +274,12 @@ export default function AnalyticsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">アセット数</p>
-                    <p className="text-3xl font-bold mt-1">{stats.totalAssets}</p>
+                    <p className="text-4xl font-black mt-1">{stats.totalAssets}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       直近7日: +{stats.recentAssets}
                     </p>
                   </div>
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-600">
-                    <BarChart3 className="h-5 w-5" />
-                  </div>
+                  <BarChart3 className="h-5 w-5 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
@@ -302,12 +289,10 @@ export default function AnalyticsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">ブランドDNA</p>
-                    <p className="text-3xl font-bold mt-1">{stats.dsProgress}%</p>
-                    <Progress value={stats.dsProgress} className="h-1.5 mt-2" />
+                    <p className="text-4xl font-black mt-1">{stats.dsProgress}%</p>
+                    <Progress value={stats.dsProgress} className="h-1.5 mt-2 rounded-sm" />
                   </div>
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-600">
-                    <Star className="h-5 w-5" />
-                  </div>
+                  <Star className="h-5 w-5 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
@@ -418,7 +403,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {stats.totalCreatives > 0 && (
-                  <div className="mt-6 p-4 rounded-lg bg-muted/50">
+                  <div className="mt-6 p-4 border-l-2 border-primary">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium">インサイト</span>
@@ -445,17 +430,17 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-4 rounded-lg bg-muted/50">
+                  <div className="p-4 rounded-lg border border-border">
                     <p className="text-2xl font-bold text-foreground">
                       {creatives.filter((c) => c.status === "DRAFT").length}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">下書き</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20">
+                  <div className="p-4 rounded-lg border border-border">
                     <p className="text-2xl font-bold text-emerald-600">{stats.published}</p>
                     <p className="text-xs text-muted-foreground mt-1">公開中</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20">
+                  <div className="p-4 rounded-lg border border-border">
                     <p className="text-2xl font-bold text-red-500">{stats.favorited}</p>
                     <p className="text-xs text-muted-foreground mt-1">お気に入り</p>
                   </div>

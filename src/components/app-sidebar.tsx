@@ -47,7 +47,7 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading } = useBrandsContext();
+  const { brands, selectedBrandId, selectBrand, loading: brandsLoading } = useBrandsContext();
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -68,20 +68,20 @@ export function AppSidebar() {
       .slice(0, 2);
   };
 
-  const selectedBrand = brands.length > 0 ? brands[0] : null;
+  const selectedBrand = brands.find((b) => b.id === selectedBrandId) || null;
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Sparkles className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
+            <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-sidebar-foreground">
               AIOプレス
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-sidebar-foreground/50">
               AI-Optimized Press
             </p>
           </div>
@@ -90,7 +90,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-4 py-2">
+          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/40 px-4 py-2">
             ブランド選択
           </SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
@@ -103,27 +103,29 @@ export function AppSidebar() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 hover:bg-sidebar-accent transition-colors">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                      <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-xs font-medium">
                         {getBrandInitials(selectedBrand.name)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="flex-1 text-left text-sm font-medium text-sidebar-foreground truncate">
                       {selectedBrand.name}
                     </span>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    <ChevronDown className="h-4 w-4 text-sidebar-foreground/40" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
                   {brands.map((brand) => (
-                    <DropdownMenuItem key={brand.id} className="gap-3" asChild>
-                      <Link href={`/brands/${brand.id}`}>
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {getBrandInitials(brand.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {brand.name}
-                      </Link>
+                    <DropdownMenuItem
+                      key={brand.id}
+                      className={`gap-3 ${brand.id === selectedBrandId ? "bg-accent" : ""}`}
+                      onClick={() => selectBrand(brand.id)}
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-muted text-foreground text-xs">
+                          {getBrandInitials(brand.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {brand.name}
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuItem className="gap-3 text-primary" asChild>
@@ -147,7 +149,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-4 py-2">
+          <SidebarGroupLabel className="text-xs font-medium text-sidebar-foreground/40 px-4 py-2">
             メニュー
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -159,7 +161,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      className="gap-3"
+                      className={`gap-3 ${isActive ? "border-l-2 border-sidebar-primary" : ""}`}
                     >
                       <Link href={item.href}>
                         <item.icon className="h-4 w-4" />
@@ -178,7 +180,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarImage src={firebaseUser?.photoURL || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-foreground text-sm font-medium">
               {getInitials(firebaseUser?.displayName ?? null)}
             </AvatarFallback>
           </Avatar>
@@ -186,7 +188,7 @@ export function AppSidebar() {
             <p className="text-sm font-medium text-sidebar-foreground truncate">
               {firebaseUser?.displayName || "ユーザー"}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-sidebar-foreground/50 truncate">
               {firebaseUser?.email || ""}
             </p>
           </div>

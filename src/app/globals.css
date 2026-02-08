@@ -66,61 +66,61 @@
 
 :root {
   /* Border Radius */
-  --radius: 0.65rem;
-  
+  --radius: 0.5rem;
+
   /* Primary Colors (Orange) */
   --primary: #F25533;
   --primary-foreground: #FFFFFF;
-  
+
   /* Secondary Colors (Blue) */
   --secondary: #3054AD;
   --secondary-foreground: #FFFFFF;
-  
+
   /* Accent Colors */
   --accent: #F25533;
   --accent-foreground: #FFFFFF;
-  
+
   /* Background & Foreground */
-  --background: #FFFFFF;
+  --background: #FAFAF8;
   --foreground: #1A1A1A;
-  
+
   /* Card Colors */
   --card: #FFFFFF;
   --card-foreground: #1A1A1A;
-  
+
   /* Popover Colors */
   --popover: #FFFFFF;
   --popover-foreground: #1A1A1A;
-  
+
   /* Muted Colors */
-  --muted: #F5F5F5;
+  --muted: #F0EDE8;
   --muted-foreground: #666666;
-  
+
   /* Destructive Colors */
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  
+
   /* Border & Input Colors */
-  --border: #E5E5E5;
-  --input: #E5E5E5;
+  --border: #E8E4DE;
+  --input: #E8E4DE;
   --ring: #3054AD;
-  
+
   /* Chart Colors */
   --chart-1: #7890CA;
   --chart-2: #3054AD;
   --chart-3: #2A4A9A;
   --chart-4: #28366E;
   --chart-5: #1E2A5E;
-  
+
   /* Sidebar Colors */
-  --sidebar: #FAFAFA;
-  --sidebar-foreground: #1A1A1A;
-  --sidebar-primary: #3054AD;
+  --sidebar: #111111;
+  --sidebar-foreground: #FAFAF8;
+  --sidebar-primary: #F25533;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F5F5F5;
-  --sidebar-accent-foreground: #1A1A1A;
-  --sidebar-border: #E5E5E5;
-  --sidebar-ring: #3054AD;
+  --sidebar-accent: #1E1E1E;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #222222;
+  --sidebar-ring: #F25533;
   
   /* Neutral Colors */
   --neutral-white: #FFFFFF;
@@ -210,5 +210,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  .heading-display {
+    @apply text-4xl md:text-5xl font-black tracking-tight leading-[1.1];
+  }
+  .heading-page {
+    @apply text-2xl md:text-3xl font-bold tracking-tight;
+  }
+  .heading-section {
+    @apply text-lg font-semibold tracking-tight;
+  }
+  .card-interactive {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+  }
+  .bg-dots {
+    background-image: radial-gradient(circle, #00000008 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }

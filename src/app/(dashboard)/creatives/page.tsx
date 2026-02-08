@@ -49,18 +49,18 @@ import {
   Globe,
   Archive,
   FileEdit,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { CreativeType, Creative } from "@/types";
-import { generateCreativeFunction, generateImageFunction } from "@/lib/firebase/functions";
+import type { CreativeType, Creative, EpsonPrintSettings } from "@/types";
+import { generateCreativeFunction, generateImageFunction, printCreativeFunction, getEpsonSettingsFunction } from "@/lib/firebase/functions";
 import { getBrandCreatives, updateCreative } from "@/lib/firebase/firestore";
 
 export default function CreativesPage() {
   const searchParams = useSearchParams();
   const brandIdParam = searchParams.get("brandId");
   const { firebaseUser } = useAuthContext();
-  const { brands, loading: brandsLoading } = useBrandsContext();
-  const [selectedBrandId, setSelectedBrandId] = useState<string>(brandIdParam || "");
+  const { brands, selectedBrandId, selectBrand, loading: brandsLoading } = useBrandsContext();
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [creativeType, setCreativeType] = useState<CreativeType>("CATCH_COPY");
   const [instruction, setInstruction] = useState("");
@@ -71,10 +71,27 @@ export default function CreativesPage() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score">("newest");
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [printTarget, setPrintTarget] = useState<Creative | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [epsonConnected, setEpsonConnected] = useState(false);
+  const [printSettings, setPrintSettings] = useState<EpsonPrintSettings>({
+    media_size: "ms_a4",
+    print_quality: "normal",
+    color_mode: "color",
+    copies: 1,
+  });
 
   useEffect(() => {
-    if (brandIdParam) {
-      setSelectedBrandId(brandIdParam);
+    // Epson Connect の接続状態を確認
+    getEpsonSettingsFunction({}).then((res) => {
+      setEpsonConnected(res.data.configured);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (brandIdParam && brandIdParam !== selectedBrandId) {
+      selectBrand(brandIdParam);
     }
   }, [brandIdParam]);
 
@@ -180,6 +197,39 @@ export default function CreativesPage() {
     }
   };
 
+  const handlePrint = async () => {
+    if (!printTarget) return;
+    setIsPrinting(true);
+    try {
+      const result = await printCreativeFunction({
+        creativeId: printTarget.id,
+        printSettings,
+      });
+      if (result.data.success) {
+        toast.success(result.data.message || "印刷ジョブを送信しました");
+        setIsPrintOpen(false);
+        setPrintTarget(null);
+      }
+    } catch (error: any) {
+      console.error("Print error:", error);
+      toast.error(error.message || "印刷に失敗しました");
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const openPrintDialog = (creative: Creative) => {
+    setPrintTarget(creative);
+    setPrintSettings({
+      media_size: creative.type === "IMAGE" ? "ms_l" : "ms_a4",
+      media_type: creative.type === "IMAGE" ? "mt_photopaper" : "mt_plainpaper",
+      print_quality: creative.type === "IMAGE" ? "high" : "normal",
+      color_mode: "color",
+      copies: 1,
+    });
+    setIsPrintOpen(true);
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("クリップボードにコピーしました");
@@ -259,35 +309,32 @@ export default function CreativesPage() {
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <span className="text-muted-foreground">
               {getTypeIcon(creative.type)}
-            </div>
-            <Badge variant="secondary">
+            </span>
+            <span className="text-sm font-medium text-foreground">
               {getTypeLabel(creative.type)}
-            </Badge>
+            </span>
             {creative.status === "PUBLISHED" && (
-              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200" variant="outline">
+              <Badge variant="outline" className="text-emerald-600 border-emerald-300">
                 <Globe className="mr-1 h-3 w-3" />公開中
               </Badge>
             )}
             {creative.status === "ARCHIVED" && (
-              <Badge className="bg-muted text-muted-foreground" variant="outline">
+              <Badge variant="outline" className="text-muted-foreground">
                 <Archive className="mr-1 h-3 w-3" />アーカイブ
               </Badge>
             )}
             {creative.metadata?.brandFitScore != null && (
-              <Badge
-                variant="outline"
-                className={`${
-                  creative.metadata.brandFitScore >= 80
-                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-200"
-                    : creative.metadata.brandFitScore >= 60
-                    ? "bg-yellow-500/10 text-yellow-600 border-yellow-200"
-                    : "bg-red-500/10 text-red-600 border-red-200"
-                }`}
-              >
-                適合度: {creative.metadata.brandFitScore}%
-              </Badge>
+              <span className={`text-sm font-bold ${
+                creative.metadata.brandFitScore >= 80
+                  ? "text-emerald-600"
+                  : creative.metadata.brandFitScore >= 60
+                  ? "text-yellow-600"
+                  : "text-red-600"
+              }`}>
+                {creative.metadata.brandFitScore}%
+              </span>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -332,6 +379,17 @@ export default function CreativesPage() {
             >
               <Heart className={`h-4 w-4 ${creative.isFavorite ? "fill-current" : ""}`} />
             </Button>
+            {epsonConnected && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-blue-600"
+                title="印刷"
+                onClick={() => openPrintDialog(creative)}
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -368,7 +426,7 @@ export default function CreativesPage() {
         )}
 
         {/* コンテンツ表示 */}
-        <div className="rounded-lg bg-muted p-4">
+        <div className="rounded-lg border border-border p-4">
           <pre className="whitespace-pre-wrap text-sm text-foreground font-sans leading-relaxed">
             {creative.content}
           </pre>
@@ -391,8 +449,8 @@ export default function CreativesPage() {
 
         {/* Brand Fit Feedback */}
         {creative.metadata?.brandFitFeedback && (
-          <div className="mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-xs text-blue-700 dark:text-blue-300">
-            <span className="font-medium">AI評価:</span> {creative.metadata.brandFitFeedback}
+          <div className="mt-3 p-3 border-l-2 border-primary text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">AI評価:</span> {creative.metadata.brandFitFeedback}
           </div>
         )}
       </CardContent>
@@ -446,7 +504,7 @@ export default function CreativesPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">クリエイティブ生成</h1>
+          <h1 className="heading-page text-foreground">クリエイティブ生成</h1>
           <p className="text-sm text-muted-foreground mt-1">
             ブランドDNAに基づいてAIが最適化されたコンテンツを生成します
           </p>
@@ -578,8 +636,8 @@ export default function CreativesPage() {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-4">
             <Select
-              value={selectedBrandId}
-              onValueChange={setSelectedBrandId}
+              value={selectedBrandId || ""}
+              onValueChange={selectBrand}
               disabled={brandsLoading}
             >
               <SelectTrigger className="w-full md:w-[300px]">
@@ -630,6 +688,133 @@ export default function CreativesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 印刷ダイアログ */}
+      <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Printer className="h-5 w-5" />
+              クリエイティブを印刷
+            </DialogTitle>
+            <DialogDescription>
+              Epson Connect を使って印刷します
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {printTarget && (
+              <div className="rounded-lg bg-muted p-3 text-sm">
+                <p className="font-medium">{getTypeLabel(printTarget.type)}</p>
+                <p className="text-muted-foreground mt-1 truncate">
+                  {printTarget.content.substring(0, 100)}
+                  {printTarget.content.length > 100 ? "..." : ""}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>用紙サイズ</Label>
+                <Select
+                  value={printSettings.media_size || "ms_a4"}
+                  onValueChange={(v) =>
+                    setPrintSettings((s) => ({ ...s, media_size: v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ms_a4">A4</SelectItem>
+                    <SelectItem value="ms_a3">A3</SelectItem>
+                    <SelectItem value="ms_a5">A5</SelectItem>
+                    <SelectItem value="ms_letter">Letter</SelectItem>
+                    <SelectItem value="ms_l">L判</SelectItem>
+                    <SelectItem value="ms_2l">2L判</SelectItem>
+                    <SelectItem value="ms_postcard">はがき</SelectItem>
+                    <SelectItem value="ms_kg">KG</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>印刷品質</Label>
+                <Select
+                  value={printSettings.print_quality || "normal"}
+                  onValueChange={(v) =>
+                    setPrintSettings((s) => ({ ...s, print_quality: v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">ドラフト</SelectItem>
+                    <SelectItem value="normal">標準</SelectItem>
+                    <SelectItem value="high">高品質</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>カラーモード</Label>
+                <Select
+                  value={printSettings.color_mode || "color"}
+                  onValueChange={(v) =>
+                    setPrintSettings((s) => ({ ...s, color_mode: v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="color">カラー</SelectItem>
+                    <SelectItem value="mono">モノクロ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>部数</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={99}
+                  value={printSettings.copies || 1}
+                  onChange={(e) =>
+                    setPrintSettings((s) => ({
+                      ...s,
+                      copies: Math.max(1, Math.min(99, parseInt(e.target.value) || 1)),
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsPrintOpen(false)}
+              disabled={isPrinting}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handlePrint} disabled={isPrinting}>
+              {isPrinting ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  送信中...
+                </>
+              ) : (
+                <>
+                  <Printer className="mr-2 h-4 w-4" />
+                  印刷
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {!selectedBrandId ? (
         <Card>
