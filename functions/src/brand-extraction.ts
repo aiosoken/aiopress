@@ -353,11 +353,15 @@ export const extractBrandFromFile = functions
       const isImage = fileType.startsWith("image/");
       const isPdf =
         fileType === "application/pdf" || fileName.endsWith(".pdf");
+      const isMarkdown =
+        fileType === "text/markdown" ||
+        fileType === "text/x-markdown" ||
+        fileName.endsWith(".md");
 
-      if (!isImage && !isPdf) {
+      if (!isImage && !isPdf && !isMarkdown) {
         throw new functions.https.HttpsError(
           "invalid-argument",
-          "対応形式: PDF, 画像（JPG, PNG, WebP）"
+          "対応形式: PDF, 画像(JPG, PNG, WebP), Markdown"
         );
       }
 
