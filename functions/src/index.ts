@@ -17,5 +17,8 @@ export { extractBrandFromFile, extractBrandFromUrl } from "./brand-extraction";
 // アカウント管理関数
 export { deleteAccount } from "./account";
 
+// プレゼンテーション生成関数
+export { generatePresentation } from "./presentations";
+
 // 印刷関連関数（Epson Connect）
 export { printCreative, saveEpsonSettings, getEpsonSettings } from "./printing";

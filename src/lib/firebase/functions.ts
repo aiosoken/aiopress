@@ -13,7 +13,7 @@ export const analyzeAssetFunction = httpsCallable<
 export const generateCreativeFunction = httpsCallable<
   {
     brandId: string;
-    type: "CATCH_COPY" | "SNS_POST" | "ARTICLE" | "IMAGE";
+    type: "CATCH_COPY" | "SNS_POST" | "ARTICLE" | "IMAGE" | "PRESENTATION";
     prompt: string;
   },
   {
@@ -111,6 +111,32 @@ export const extractBrandFromUrlFunction = httpsCallable<
     result?: import("@/types").BrandExtractionResult;
   }
 >(functions, "extractBrandFromUrl");
+
+// プレゼンテーション生成
+export const generatePresentationFunction = httpsCallable<
+  {
+    brandId: string;
+    prompt: string;
+    slideCount?: number;
+  },
+  {
+    success: boolean;
+    pptxUrl?: string;
+    creative?: {
+      id: string;
+      brandId: string;
+      type: string;
+      prompt: string;
+      content: string;
+      pptxUrl?: string;
+      metadata: Record<string, unknown>;
+      createdBy: string;
+      createdAt: any;
+      updatedAt: any;
+      status: string;
+    };
+  }
+>(functions, "generatePresentation");
 
 // Epson Connect 印刷
 export const printCreativeFunction = httpsCallable<

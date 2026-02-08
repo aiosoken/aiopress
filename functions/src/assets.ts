@@ -116,10 +116,12 @@ export const onAssetUpload = functions
         model: "gemini-2.0-flash",
       });
 
+      const fileTypeHint = object.contentType === "application/pdf" ? "PDF文書" : "画像/ファイル";
       const analysisPrompt = `
-この画像/ファイルを詳細に分析し、以下の情報をJSON形式で出力してください:
+この${fileTypeHint}を詳細に分析し、以下の情報をJSON形式で出力してください。
+必ず全てのフィールドに値を入れてください:
 {
-  "description": "ファイルの詳細な説明",
+  "description": "ファイルの詳細な説明（必ず記入）",
   "keywords": ["キーワード1", "キーワード2", ...],
   "tone": "トーン＆マナー (formal/casual/cheerful/professional等)",
   "entities": ["エンティティ1", "エンティティ2", ...],
@@ -132,7 +134,8 @@ ${visionAnalysis.labels.length > 0 ? `検出されたラベル: ${visionAnalysis
 
       const parts: any[] = [{ text: analysisPrompt }];
 
-      if (object.contentType?.startsWith("image/")) {
+      // 画像またはPDFの場合、Geminiにファイルデータを送信
+      if (object.contentType?.startsWith("image/") || object.contentType === "application/pdf") {
         parts.push({
           fileData: {
             fileUri: gcsUri,

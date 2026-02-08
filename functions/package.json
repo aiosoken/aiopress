@@ -22,7 +22,8 @@
     "firebase-functions": "^5.0.0",
     "google-auth-library": "^10.5.0",
     "node-fetch": "^2.7.0",
-    "pdfkit": "^0.17.2"
+    "pdfkit": "^0.17.2",
+    "pptxgenjs": "^3.12.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
