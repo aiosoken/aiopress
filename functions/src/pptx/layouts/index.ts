@@ -5,4 +5,7 @@ export { addTableSlide } from "./table";
 export { addChartSlide } from "./chart";
 export { addMetricsSlide } from "./metrics";
 export { addTwoColumnSlide } from "./two-column";
+export { addImageSlide } from "./image";
+export { addImageTextSlide } from "./image-text";
+export { addDiagramSlide } from "./diagram";
 export { addEndSlide } from "./end";

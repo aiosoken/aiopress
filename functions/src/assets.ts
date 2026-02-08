@@ -122,7 +122,11 @@ export const onAssetUpload = functions
         model: "gemini-2.0-flash",
       });
 
-      const fileTypeHint = object.contentType === "application/pdf" ? "PDF文書" : "画像/ファイル";
+      const fileTypeHint = object.contentType === "application/pdf" 
+        ? "PDF文書" 
+        : (object.contentType === "text/markdown" || object.contentType === "text/x-markdown" || object.name?.endsWith(".md"))
+        ? "Markdown文書"
+        : "画像/ファイル";
       const analysisPrompt = `
 この${fileTypeHint}を詳細に分析し、以下の情報をJSON形式で出力してください。
 必ず全てのフィールドに値を入れてください:
@@ -140,13 +144,16 @@ ${visionAnalysis.labels.length > 0 ? `検出されたラベル: ${visionAnalysis
 
       const parts: any[] = [{ text: analysisPrompt }];
 
-      // 画像またはPDFの場合、インラインBase64データとしてGeminiに送信
-      // （GCS URIだとVertex AIサービスエージェントの権限問題が発生するため）
-      if (object.contentType?.startsWith("image/") || object.contentType === "application/pdf") {
+      // 画像、PDF、Markdownの場合、インラインBase64データとしてGeminiに送信
+      // (GCS URIだとVertex AIサービスエージェントの権限問題が発生するため)
+      const isMarkdown = object.contentType === "text/markdown" || object.contentType === "text/x-markdown" || object.name?.endsWith(".md");
+      if (object.contentType?.startsWith("image/") || object.contentType === "application/pdf" || isMarkdown) {
+        // Markdownの場合はmimeTypeをtext/markdownに正規化
+        const mimeType = isMarkdown ? "text/markdown" : object.contentType;
         parts.push({
           inlineData: {
             data: fileBase64,
-            mimeType: object.contentType,
+            mimeType: mimeType,
           },
         });
       }
