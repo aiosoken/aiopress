@@ -144,21 +144,21 @@ export default function AssetsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
+      <div className="page-header flex items-center justify-between animate-fade-up">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">資産管理</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="heading-page text-foreground">資産管理</h1>
+          <p className="text-sm text-muted-foreground mt-2">
             ブランド資産のアップロード・管理・AI分析ができます
           </p>
         </div>
         <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!selectedBrandId}>
+            <Button disabled={!selectedBrandId} className="shadow-layered hover:shadow-layered-lg transition-shadow">
               <Upload className="mr-2 h-4 w-4" />
               アップロード
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="rounded-xl">
             <DialogHeader>
               <DialogTitle>資産をアップロード</DialogTitle>
               <DialogDescription>
@@ -176,7 +176,7 @@ export default function AssetsPage() {
                 />
               </div>
               {selectedFile && (
-                <div className="rounded-lg border p-4">
+                <div className="rounded-xl border p-4">
                   <p className="font-medium">{selectedFile.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatFileSize(selectedFile.size)}
@@ -206,9 +206,9 @@ export default function AssetsPage() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.05s" }}>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium">ブランドを選択</CardTitle>
+          <CardTitle className="text-base font-semibold">ブランドを選択</CardTitle>
           <CardDescription>
             資産を管理するブランドを選択してください
           </CardDescription>
@@ -219,7 +219,7 @@ export default function AssetsPage() {
             onValueChange={selectBrand}
             disabled={brandsLoading}
           >
-            <SelectTrigger className="w-full md:w-[300px]">
+            <SelectTrigger className="h-11 w-full md:w-[300px]">
               <SelectValue placeholder="ブランドを選択" />
             </SelectTrigger>
             <SelectContent>
@@ -234,10 +234,12 @@ export default function AssetsPage() {
       </Card>
 
       {!selectedBrandId ? (
-        <Card>
+        <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.1s" }}>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FolderOpen className="h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">
+            <div className="h-20 w-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
+            </div>
+            <h3 className="mt-4 text-lg font-bold">
               ブランドを選択してください
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -249,18 +251,18 @@ export default function AssetsPage() {
         <>
           {/* Search and Filter */}
           {assets.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 animate-fade-up" style={{ animationDelay: "0.1s" }}>
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="ファイル名、キーワードで検索..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="h-11 pl-9"
                 />
               </div>
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectTrigger className="h-11 w-full sm:w-[160px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -276,9 +278,9 @@ export default function AssetsPage() {
           {assetsLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="shadow-layered rounded-xl">
                   <CardContent className="p-5">
-                    <Skeleton className="h-32 w-full rounded-lg mb-4" />
+                    <Skeleton className="h-32 w-full rounded-xl mb-4" />
                     <Skeleton className="h-4 w-3/4 mb-2" />
                     <Skeleton className="h-3 w-1/2" />
                   </CardContent>
@@ -286,10 +288,12 @@ export default function AssetsPage() {
               ))}
             </div>
           ) : filteredAssets.length === 0 ? (
-            <Card>
+            <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "0.15s" }}>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <FolderOpen className="h-16 w-16 text-muted-foreground/50" />
-                <h3 className="mt-4 text-lg font-semibold">
+                <div className="h-20 w-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <FolderOpen className="h-10 w-10 text-muted-foreground/50" />
+                </div>
+                <h3 className="mt-4 text-lg font-bold">
                   {searchQuery || filterType !== "all" ? "該当する資産がありません" : "資産がありません"}
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -298,7 +302,7 @@ export default function AssetsPage() {
                     : "最初の資産をアップロードして、AIによる分析を始めましょう"}
                 </p>
                 {!searchQuery && filterType === "all" && (
-                  <Button className="mt-6" onClick={() => setIsUploadOpen(true)}>
+                  <Button className="mt-6 shadow-layered hover:shadow-layered-lg transition-shadow" onClick={() => setIsUploadOpen(true)}>
                     <Upload className="mr-2 h-4 w-4" />
                     最初の資産をアップロード
                   </Button>
@@ -306,9 +310,9 @@ export default function AssetsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-up" style={{ animationDelay: "0.15s" }}>
               {filteredAssets.map((asset) => (
-                <Card key={asset.id} className="group hover:shadow-md transition-shadow overflow-hidden">
+                <Card key={asset.id} className="group shadow-layered hover:shadow-layered-lg transition-all duration-300 rounded-xl overflow-hidden">
                   {/* Image Thumbnail */}
                   {isImageType(asset.fileType) && asset.fileUrl && (
                     <div className="aspect-video bg-muted overflow-hidden">
@@ -324,7 +328,7 @@ export default function AssetsPage() {
                   <CardContent className={`p-5 ${!isImageType(asset.fileType) ? "" : ""}`}>
                     <div className="flex items-start gap-3 mb-3">
                       {!isImageType(asset.fileType) && (
-                        <div className="p-2.5 rounded-lg bg-muted shrink-0">
+                        <div className="p-2.5 rounded-xl bg-muted shrink-0">
                           {getFileIcon(asset.fileType)}
                         </div>
                       )}
@@ -338,7 +342,7 @@ export default function AssetsPage() {
 
                     {/* Status badges */}
                     {asset.status === "processing" && (
-                      <div className="mb-3 rounded-lg bg-amber-500/10 p-2.5">
+                      <div className="mb-3 rounded-xl bg-amber-500/10 p-2.5">
                         <div className="flex items-center gap-2">
                           <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
                           <p className="text-xs text-amber-600 font-medium">AI分析中...</p>
@@ -346,7 +350,7 @@ export default function AssetsPage() {
                       </div>
                     )}
                     {asset.status === "failed" && (
-                      <div className="mb-3 rounded-lg bg-destructive/10 p-2.5">
+                      <div className="mb-3 rounded-xl bg-destructive/10 p-2.5">
                         <p className="text-xs text-destructive font-medium">分析に失敗しました</p>
                       </div>
                     )}
@@ -354,7 +358,7 @@ export default function AssetsPage() {
                     {/* Analysis summary */}
                     {asset.analysis && asset.status === "completed" && (
                       <div className="mb-3 space-y-2">
-                        <div className="rounded-lg bg-emerald-500/10 p-2.5">
+                        <div className="rounded-xl bg-emerald-500/10 p-2.5">
                           <p className="text-xs font-medium text-emerald-600 mb-1">AI分析完了</p>
                           <p className="text-xs text-foreground line-clamp-2">
                             {asset.analysis.description}

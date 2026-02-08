@@ -173,16 +173,16 @@ export default function BrandsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between animate-fade-up">
+        <div className="page-header">
           <h1 className="heading-page text-foreground">ブランド管理</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-2">
             ブランドの作成・編集・削除ができます
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="shadow-layered hover:shadow-layered-lg transition-shadow">
               <Plus className="mr-2 h-4 w-4" />
               新規ブランド作成
             </Button>
@@ -297,10 +297,12 @@ export default function BrandsPage() {
           </CardContent>
         </Card>
       ) : brands.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Building2 className="h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">
+        <Card className="shadow-layered">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50">
+              <Building2 className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <h3 className="mt-4 text-lg font-bold">
               ブランドがありません
             </h3>
             <p className="mt-2 text-sm text-muted-foreground text-center">
@@ -314,12 +316,12 @@ export default function BrandsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {brands.map((brand) => (
-            <Card key={brand.id} className="group relative card-interactive">
+          {brands.map((brand, i) => (
+            <Card key={brand.id} className="group relative shadow-layered hover:shadow-layered-lg transition-all duration-300 animate-fade-up" style={{ animationDelay: `${(i + 1) * 0.1}s` }}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-foreground text-background flex items-center justify-center text-lg font-bold">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-foreground to-foreground/80 text-background flex items-center justify-center text-lg font-bold shadow-sm">
                       {brand.name.charAt(0)}
                     </div>
                     <div className="min-w-0">

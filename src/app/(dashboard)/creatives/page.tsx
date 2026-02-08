@@ -85,7 +85,6 @@ export default function CreativesPage() {
   });
 
   useEffect(() => {
-    // Epson Connect の接続状態を確認
     getEpsonSettingsFunction({}).then((res) => {
       setEpsonConnected(res.data.configured);
     }).catch(() => {});
@@ -123,13 +122,11 @@ export default function CreativesPage() {
     setIsGenerating(true);
     try {
       if (creativeType === "PRESENTATION") {
-        // プレゼンテーション生成
         const result = await generatePresentationFunction({
           brandId: selectedBrandId,
           prompt: instruction,
           slideCount,
         });
-
         if (result.data.success) {
           toast.success("プレゼンテーションを生成しました");
           setIsGenerateOpen(false);
@@ -139,19 +136,13 @@ export default function CreativesPage() {
           toast.error("生成に失敗しました");
         }
       } else if (creativeType === "IMAGE") {
-        // 画像生成
         const result = await generateImageFunction({
           brandId: selectedBrandId,
           prompt: instruction,
           aspectRatio,
         });
-
         if (result.data.success) {
-          if (result.data.imageUrl) {
-            toast.success("画像を生成しました");
-          } else {
-            toast.success("画像プロンプトを生成しました");
-          }
+          toast.success(result.data.imageUrl ? "画像を生成しました" : "画像プロンプトを生成しました");
           setIsGenerateOpen(false);
           setInstruction("");
           await fetchCreatives();
@@ -159,13 +150,11 @@ export default function CreativesPage() {
           toast.error("生成に失敗しました");
         }
       } else {
-        // テキスト生成
         const result = await generateCreativeFunction({
           brandId: selectedBrandId,
           type: creativeType,
           prompt: instruction,
         });
-
         if (result.data.success && result.data.creative) {
           toast.success("クリエイティブを生成しました");
           setIsGenerateOpen(false);
@@ -287,6 +276,17 @@ export default function CreativesPage() {
     }
   };
 
+  const getTypeColor = (type: CreativeType) => {
+    switch (type) {
+      case "CATCH_COPY": return "text-primary";
+      case "SNS_POST": return "text-blue-500";
+      case "ARTICLE": return "text-emerald-500";
+      case "IMAGE": return "text-purple-500";
+      case "PRESENTATION": return "text-amber-500";
+      default: return "text-primary";
+    }
+  };
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -327,18 +327,19 @@ export default function CreativesPage() {
   };
 
   const renderCreativeCard = (creative: Creative) => (
-    <Card key={creative.id} className="hover:shadow-md transition-shadow">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-muted-foreground">
+    <Card key={creative.id} className="shadow-layered hover:shadow-layered-lg transition-all duration-300 overflow-hidden">
+      <CardContent className="p-0">
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-muted/20">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className={getTypeColor(creative.type)}>
               {getTypeIcon(creative.type)}
             </span>
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               {getTypeLabel(creative.type)}
             </span>
             {creative.status === "PUBLISHED" && (
-              <Badge variant="outline" className="text-emerald-600 border-emerald-300">
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200 hover:bg-emerald-500/10">
                 <Globe className="mr-1 h-3 w-3" />公開中
               </Badge>
             )}
@@ -348,23 +349,30 @@ export default function CreativesPage() {
               </Badge>
             )}
             {creative.metadata?.brandFitScore != null && (
-              <span className={`text-sm font-bold ${
+              <div className={`flex items-center gap-1 text-sm font-bold ${
                 creative.metadata.brandFitScore >= 80
                   ? "text-emerald-600"
                   : creative.metadata.brandFitScore >= 60
                   ? "text-yellow-600"
                   : "text-red-600"
               }`}>
+                <div className={`h-2 w-2 rounded-full ${
+                  creative.metadata.brandFitScore >= 80
+                    ? "bg-emerald-500"
+                    : creative.metadata.brandFitScore >= 60
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                }`} />
                 {creative.metadata.brandFitScore}%
-              </span>
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {creative.status !== "PUBLISHED" && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-emerald-600"
+                className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
                 title="公開する"
                 onClick={() => changeStatus(creative, "PUBLISHED")}
               >
@@ -375,7 +383,7 @@ export default function CreativesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 hover:bg-muted"
                 title="下書きに戻す"
                 onClick={() => changeStatus(creative, "DRAFT")}
               >
@@ -386,7 +394,7 @@ export default function CreativesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground"
+                className="h-8 w-8 text-muted-foreground hover:bg-muted"
                 title="アーカイブ"
                 onClick={() => changeStatus(creative, "ARCHIVED")}
               >
@@ -396,7 +404,7 @@ export default function CreativesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className={`h-8 w-8 ${creative.isFavorite ? "text-red-500" : ""}`}
+              className={`h-8 w-8 ${creative.isFavorite ? "text-red-500" : "hover:text-red-500"} hover:bg-red-500/10`}
               onClick={() => toggleFavorite(creative)}
             >
               <Heart className={`h-4 w-4 ${creative.isFavorite ? "fill-current" : ""}`} />
@@ -405,7 +413,7 @@ export default function CreativesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-blue-600"
+                className="h-8 w-8 text-blue-600 hover:bg-blue-500/10"
                 title="印刷"
                 onClick={() => openPrintDialog(creative)}
               >
@@ -415,7 +423,7 @@ export default function CreativesPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-muted"
               onClick={() => copyToClipboard(creative.content)}
             >
               <Copy className="h-4 w-4" />
@@ -423,39 +431,19 @@ export default function CreativesPage() {
           </div>
         </div>
 
-        {/* PPTX ダウンロード */}
-        {creative.type === "PRESENTATION" && creative.pptxUrl && (
-          <div className="mb-4 flex items-center gap-3 rounded-lg border p-4 bg-muted/30">
-            <Presentation className="h-8 w-8 text-primary" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">プレゼンテーションファイル</p>
-              <p className="text-xs text-muted-foreground">PowerPoint形式（.pptx）</p>
-            </div>
-            <a
-              href={creative.pptxUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-            >
-              <Button variant="outline" size="sm">
-                <Download className="mr-2 h-3 w-3" />
-                ダウンロード
-              </Button>
-            </a>
-          </div>
-        )}
-
-        {/* 画像表示 */}
-        {creative.type === "IMAGE" && creative.imageUrl && (
-          <div className="mb-4 rounded-lg overflow-hidden border">
-            <img
-              src={creative.imageUrl}
-              alt="Generated image"
-              className="w-full h-auto max-h-96 object-contain bg-muted"
-            />
-            <div className="flex justify-end p-2 bg-muted/50">
+        <div className="p-5">
+          {/* PPTX ダウンロード */}
+          {creative.type === "PRESENTATION" && creative.pptxUrl && (
+            <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/50 p-4 bg-gradient-warm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
+                <Presentation className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">プレゼンテーションファイル</p>
+                <p className="text-xs text-muted-foreground">PowerPoint形式（.pptx）</p>
+              </div>
               <a
-                href={creative.imageUrl}
+                href={creative.pptxUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 download
@@ -466,49 +454,75 @@ export default function CreativesPage() {
                 </Button>
               </a>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* コンテンツ表示 */}
-        <div className="rounded-lg border border-border p-4">
-          <pre className="whitespace-pre-wrap text-sm text-foreground font-sans leading-relaxed">
-            {creative.content}
-          </pre>
+          {/* 画像表示 */}
+          {creative.type === "IMAGE" && creative.imageUrl && (
+            <div className="mb-4 rounded-xl overflow-hidden border border-border/50">
+              <img
+                src={creative.imageUrl}
+                alt="Generated image"
+                className="w-full h-auto max-h-96 object-contain bg-muted/30"
+              />
+              <div className="flex justify-end p-2.5 bg-muted/20">
+                <a
+                  href={creative.imageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                >
+                  <Button variant="outline" size="sm">
+                    <Download className="mr-2 h-3 w-3" />
+                    ダウンロード
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* コンテンツ表示 */}
+          <div className="rounded-xl bg-muted/20 border border-border/30 p-5">
+            <pre className="whitespace-pre-wrap text-sm text-foreground font-sans leading-relaxed">
+              {creative.content}
+            </pre>
+          </div>
+
+          {/* メタ情報 */}
+          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-4">
+              {creative.prompt && (
+                <span>
+                  <span className="font-semibold text-foreground/70">テーマ:</span> {creative.prompt}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {formatDate(creative.createdAt)}
+            </div>
+          </div>
+
+          {/* Brand Fit Feedback */}
+          {creative.metadata?.brandFitFeedback && (
+            <div className="mt-3 p-4 rounded-xl bg-gradient-warm border-l-3 border-primary text-xs text-muted-foreground" style={{ borderLeft: "3px solid var(--primary)" }}>
+              <span className="font-semibold text-foreground">AI評価:</span> {creative.metadata.brandFitFeedback}
+            </div>
+          )}
         </div>
-
-        {/* メタ情報 */}
-        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
-            {creative.prompt && (
-              <span>
-                <span className="font-medium">テーマ:</span> {creative.prompt}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {formatDate(creative.createdAt)}
-          </div>
-        </div>
-
-        {/* Brand Fit Feedback */}
-        {creative.metadata?.brandFitFeedback && (
-          <div className="mt-3 p-3 border-l-2 border-primary text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">AI評価:</span> {creative.metadata.brandFitFeedback}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
 
   const renderEmptyState = (type?: CreativeType) => (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        {type ? getTypeIcon(type) : <Wand2 className="h-16 w-16 text-muted-foreground/50" />}
-        <h3 className="mt-4 text-lg font-semibold">
+    <Card className="shadow-layered">
+      <CardContent className="flex flex-col items-center justify-center py-16">
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+          {type ? <span className={getTypeColor(type)}>{getTypeIcon(type)}</span> : <Wand2 className="h-8 w-8 text-muted-foreground/40" />}
+        </div>
+        <h3 className="text-lg font-bold">
           {type ? `${getTypeLabel(type)}がありません` : "クリエイティブがありません"}
         </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
           {showFavoritesOnly
             ? "お気に入りのクリエイティブがありません"
             : "「新規生成」ボタンからクリエイティブを生成してください"}
@@ -526,14 +540,14 @@ export default function CreativesPage() {
   const renderLoadingSkeleton = () => (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <Card key={i}>
+        <Card key={i} className="shadow-layered">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Skeleton className="h-8 w-8 rounded-lg" />
+              <Skeleton className="h-8 w-8 rounded-xl" />
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-5 w-20" />
             </div>
-            <Skeleton className="h-24 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-xl" />
             <div className="mt-3 flex justify-between">
               <Skeleton className="h-3 w-40" />
               <Skeleton className="h-3 w-24" />
@@ -546,23 +560,23 @@ export default function CreativesPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between animate-fade-up">
+        <div className="page-header">
           <h1 className="heading-page text-foreground">クリエイティブ生成</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-2">
             ブランドDNAに基づいてAIが最適化されたコンテンツを生成します
           </p>
         </div>
         <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!selectedBrandId}>
+            <Button disabled={!selectedBrandId} className="shadow-layered hover:shadow-layered-lg transition-shadow">
               <Plus className="mr-2 h-4 w-4" />
               新規生成
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[520px]">
             <DialogHeader>
-              <DialogTitle>クリエイティブを生成</DialogTitle>
+              <DialogTitle className="text-xl font-bold">クリエイティブを生成</DialogTitle>
               <DialogDescription>
                 ブランドDNAに基づいてAIが最適なコンテンツを生成します
               </DialogDescription>
@@ -574,37 +588,37 @@ export default function CreativesPage() {
                   value={creativeType}
                   onValueChange={(value) => setCreativeType(value as CreativeType)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CATCH_COPY">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
+                        <Sparkles className="h-4 w-4 text-primary" />
                         キャッチコピー（3案生成）
                       </div>
                     </SelectItem>
                     <SelectItem value="SNS_POST">
                       <div className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
+                        <MessageSquare className="h-4 w-4 text-blue-500" />
                         SNS投稿（3案生成）
                       </div>
                     </SelectItem>
                     <SelectItem value="ARTICLE">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-4 w-4 text-emerald-500" />
                         記事
                       </div>
                     </SelectItem>
                     <SelectItem value="IMAGE">
                       <div className="flex items-center gap-2">
-                        <ImageIcon className="h-4 w-4" />
+                        <ImageIcon className="h-4 w-4 text-purple-500" />
                         画像生成
                       </div>
                     </SelectItem>
                     <SelectItem value="PRESENTATION">
                       <div className="flex items-center gap-2">
-                        <Presentation className="h-4 w-4" />
+                        <Presentation className="h-4 w-4 text-amber-500" />
                         プレゼンテーション（PPTX）
                       </div>
                     </SelectItem>
@@ -707,21 +721,15 @@ export default function CreativesPage() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium">ブランドを選択</CardTitle>
-          <CardDescription>
-            クリエイティブを生成するブランドを選択してください
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-4">
+      <Card className="shadow-layered animate-fade-up delay-100">
+        <CardContent className="p-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Select
               value={selectedBrandId || ""}
               onValueChange={selectBrand}
               disabled={brandsLoading}
             >
-              <SelectTrigger className="w-full md:w-[300px]">
+              <SelectTrigger className="w-full sm:w-[260px] h-11">
                 <SelectValue placeholder="ブランドを選択" />
               </SelectTrigger>
               <SelectContent>
@@ -733,40 +741,41 @@ export default function CreativesPage() {
               </SelectContent>
             </Select>
             {selectedBrandId && (
-              <Button
-                variant={showFavoritesOnly ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              >
-                <Heart className={`mr-2 h-4 w-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
-                お気に入り
-              </Button>
+              <>
+                <Button
+                  variant={showFavoritesOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                  className="shrink-0"
+                >
+                  <Heart className={`mr-2 h-4 w-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
+                  お気に入り
+                </Button>
+                <div className="flex items-center gap-3 flex-1 w-full sm:w-auto">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="テーマ・内容で検索..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                  <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as typeof sortOrder)}>
+                    <SelectTrigger className="w-[140px] h-9">
+                      <ArrowUpDown className="mr-2 h-3 w-3" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">新しい順</SelectItem>
+                      <SelectItem value="oldest">古い順</SelectItem>
+                      <SelectItem value="score">スコア順</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
           </div>
-          {selectedBrandId && (
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="テーマ・内容で検索..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as typeof sortOrder)}>
-                <SelectTrigger className="w-[160px]">
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">新しい順</SelectItem>
-                  <SelectItem value="oldest">古い順</SelectItem>
-                  <SelectItem value="score">スコア順</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -784,8 +793,8 @@ export default function CreativesPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             {printTarget && (
-              <div className="rounded-lg bg-muted p-3 text-sm">
-                <p className="font-medium">{getTypeLabel(printTarget.type)}</p>
+              <div className="rounded-xl bg-muted/30 p-3 text-sm border border-border/30">
+                <p className="font-semibold">{getTypeLabel(printTarget.type)}</p>
                 <p className="text-muted-foreground mt-1 truncate">
                   {printTarget.content.substring(0, 100)}
                   {printTarget.content.length > 100 ? "..." : ""}
@@ -898,10 +907,12 @@ export default function CreativesPage() {
       </Dialog>
 
       {!selectedBrandId ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Wand2 className="h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">
+        <Card className="shadow-layered">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50">
+              <Wand2 className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <h3 className="mt-4 text-lg font-bold">
               ブランドを選択してください
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -910,7 +921,7 @@ export default function CreativesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="all" className="space-y-6">
+        <Tabs defaultValue="all" className="space-y-6 animate-fade-up delay-200">
           <TabsList>
             <TabsTrigger value="all">
               すべて

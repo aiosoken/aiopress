@@ -261,10 +261,10 @@ export default function DesignSystemPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between">
+      <div className="page-header flex items-center justify-between animate-fade-up">
         <div>
           <h1 className="heading-page text-foreground">ブランドDNA / デザインシステム</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-2">
             ブランドのDNA（ミッション・ビジョン・個性）とデザインシステムを管理します
           </p>
         </div>
@@ -273,25 +273,30 @@ export default function DesignSystemPage() {
             variant="outline"
             onClick={() => setIsExtractionDialogOpen(true)}
             disabled={!selectedBrandId}
+            className="shadow-layered hover:shadow-layered-lg transition-shadow"
           >
             <Wand2 className="mr-2 h-4 w-4" />
             自動抽出
           </Button>
-          <Button onClick={handleSave} disabled={!selectedBrandId || isSaving}>
+          <Button
+            onClick={handleSave}
+            disabled={!selectedBrandId || isSaving}
+            className="shadow-layered hover:shadow-layered-lg transition-shadow"
+          >
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? "保存中..." : "保存"}
           </Button>
         </div>
       </div>
 
-      <Card>
+      <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "50ms" }}>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium">ブランドを選択</CardTitle>
+          <CardTitle className="text-base font-semibold">ブランドを選択</CardTitle>
           <CardDescription>
             編集するブランドを選択してください
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           <Select
             value={selectedBrandId || ""}
             onValueChange={selectBrand}
@@ -312,10 +317,12 @@ export default function DesignSystemPage() {
       </Card>
 
       {!selectedBrandId ? (
-        <Card>
+        <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "100ms" }}>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Dna className="h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">
+            <div className="h-20 w-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <Dna className="h-16 w-16 text-muted-foreground/50" />
+            </div>
+            <h3 className="mt-4 text-lg font-bold">
               ブランドを選択してください
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -343,10 +350,12 @@ export default function DesignSystemPage() {
           {/* Brand DNA Tab */}
           <TabsContent value="brand-dna" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "100ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="heading-section flex items-center gap-2">
-                    <Target className="h-4 w-4" />
+                  <CardTitle className="heading-section flex items-center gap-2 font-semibold">
+                    <span className="bg-primary/10 text-primary rounded-lg p-1">
+                      <Target className="h-4 w-4" />
+                    </span>
                     ミッション
                   </CardTitle>
                   <CardDescription>
@@ -363,10 +372,12 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "150ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="heading-section flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
+                  <CardTitle className="heading-section flex items-center gap-2 font-semibold">
+                    <span className="bg-purple-500/10 text-purple-500 rounded-lg p-1">
+                      <Sparkles className="h-4 w-4" />
+                    </span>
                     ビジョン
                   </CardTitle>
                   <CardDescription>
@@ -383,10 +394,12 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "200ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="heading-section flex items-center gap-2">
-                    <Heart className="h-4 w-4" />
+                  <CardTitle className="heading-section flex items-center gap-2 font-semibold">
+                    <span className="bg-rose-500/10 text-rose-500 rounded-lg p-1">
+                      <Heart className="h-4 w-4" />
+                    </span>
                     提供価値（バリュープロポジション）
                   </CardTitle>
                   <CardDescription>
@@ -403,10 +416,12 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "250ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="heading-section flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
+                  <CardTitle className="heading-section flex items-center gap-2 font-semibold">
+                    <span className="bg-blue-500/10 text-blue-500 rounded-lg p-1">
+                      <MessageSquare className="h-4 w-4" />
+                    </span>
                     ブランドパーソナリティ
                   </CardTitle>
                   <CardDescription>
@@ -423,10 +438,12 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "300ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="heading-section flex items-center gap-2">
-                    <Type className="h-4 w-4" />
+                  <CardTitle className="heading-section flex items-center gap-2 font-semibold">
+                    <span className="bg-emerald-500/10 text-emerald-500 rounded-lg p-1">
+                      <Type className="h-4 w-4" />
+                    </span>
                     トーン＆マナー
                   </CardTitle>
                   <CardDescription>
@@ -443,9 +460,9 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "350ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium">ターゲットオーディエンス</CardTitle>
+                  <CardTitle className="text-base font-semibold">ターゲットオーディエンス</CardTitle>
                   <CardDescription>
                     ブランドのターゲット層を定義します
                   </CardDescription>
@@ -465,9 +482,9 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "400ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium">ブランドバリュー</CardTitle>
+                  <CardTitle className="text-base font-semibold">ブランドバリュー</CardTitle>
                   <CardDescription>
                     ブランドが大切にする価値観を定義します
                   </CardDescription>
@@ -480,11 +497,11 @@ export default function DesignSystemPage() {
                       placeholder="ブランドバリューを入力"
                       onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
                     />
-                    <Button onClick={handleAddValue}>追加</Button>
+                    <Button onClick={handleAddValue} className="shadow-layered hover:shadow-layered-lg transition-shadow">追加</Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {designSystem.brandValues?.map((value) => (
-                      <Badge key={value} variant="outline" className="gap-1">
+                      <Badge key={value} variant="outline" className="gap-1 rounded-full">
                         {value}
                         <button
                           onClick={() => handleRemoveValue(value)}
@@ -498,11 +515,11 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl hover:shadow-layered transition-all duration-300 animate-fade-up" style={{ animationDelay: "450ms" }}>
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-base font-medium flex items-center gap-2">
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
                         <Tag className="h-4 w-4" />
                         キーワード
                       </CardTitle>
@@ -512,7 +529,7 @@ export default function DesignSystemPage() {
                     </div>
                     <Dialog open={isKeywordDialogOpen} onOpenChange={setIsKeywordDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="shadow-layered hover:shadow-layered-lg transition-shadow">
                           <Sparkles className="mr-2 h-4 w-4" />
                           AI提案
                         </Button>
@@ -540,6 +557,7 @@ export default function DesignSystemPage() {
                           <Button
                             onClick={handleSuggestKeywords}
                             disabled={isSuggestingKeywords}
+                            className="shadow-layered hover:shadow-layered-lg transition-shadow"
                           >
                             {isSuggestingKeywords ? (
                               <>
@@ -566,11 +584,11 @@ export default function DesignSystemPage() {
                       placeholder="キーワードを入力"
                       onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
                     />
-                    <Button onClick={handleAddKeyword}>追加</Button>
+                    <Button onClick={handleAddKeyword} className="shadow-layered hover:shadow-layered-lg transition-shadow">追加</Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {designSystem.keywords?.map((keyword) => (
-                      <Badge key={keyword} variant="secondary" className="gap-1">
+                      <Badge key={keyword} variant="secondary" className="gap-1 rounded-full">
                         {keyword}
                         <button
                           onClick={() => handleRemoveKeyword(keyword)}
@@ -589,9 +607,9 @@ export default function DesignSystemPage() {
           {/* Design System Tab */}
           <TabsContent value="design-system" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
-              <Card>
+              <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "100ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium">カラーパレット</CardTitle>
+                  <CardTitle className="text-base font-semibold">カラーパレット</CardTitle>
                   <CardDescription>
                     ブランドで使用するカラーを定義します
                   </CardDescription>
@@ -610,7 +628,7 @@ export default function DesignSystemPage() {
                           type="color"
                           value={designSystem.colors?.[key] || defaultVal}
                           onChange={(e) => handleColorChange(key, e.target.value)}
-                          className="h-12 w-12 rounded-lg border cursor-pointer"
+                          className="h-12 w-12 rounded-xl border cursor-pointer"
                         />
                         <div className="flex-1">
                           <Label>{label}</Label>
@@ -626,9 +644,9 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "150ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium">タイポグラフィ</CardTitle>
+                  <CardTitle className="text-base font-semibold">タイポグラフィ</CardTitle>
                   <CardDescription>
                     ブランドで使用するフォントを定義します
                   </CardDescription>
@@ -695,9 +713,9 @@ export default function DesignSystemPage() {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2">
+              <Card className="md:col-span-2 shadow-layered rounded-xl animate-fade-up" style={{ animationDelay: "200ms" }}>
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium">ボイス＆トーン</CardTitle>
+                  <CardTitle className="text-base font-semibold">ボイス＆トーン</CardTitle>
                   <CardDescription>
                     ブランドの声のトーンを数値で定義します
                   </CardDescription>
