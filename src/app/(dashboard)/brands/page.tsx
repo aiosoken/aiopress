@@ -173,8 +173,8 @@ export default function BrandsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center justify-between animate-fade-up">
-        <div className="page-header">
+      <div className="flex items-center justify-between">
+        <div>
           <h1 className="heading-page text-foreground">ブランド管理</h1>
           <p className="text-sm text-muted-foreground mt-2">
             ブランドの作成・編集・削除ができます
@@ -182,7 +182,7 @@ export default function BrandsPage() {
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="shadow-layered hover:shadow-layered-lg transition-shadow">
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               新規ブランド作成
             </Button>
@@ -297,7 +297,7 @@ export default function BrandsPage() {
           </CardContent>
         </Card>
       ) : brands.length === 0 ? (
-        <Card className="shadow-layered">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50">
               <Building2 className="h-8 w-8 text-muted-foreground/40" />
@@ -317,7 +317,7 @@ export default function BrandsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {brands.map((brand, i) => (
-            <Card key={brand.id} className="group relative shadow-layered hover:shadow-layered-lg transition-all duration-300 animate-fade-up" style={{ animationDelay: `${(i + 1) * 0.1}s` }}>
+            <Card key={brand.id} className="group relative transition-colors">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">

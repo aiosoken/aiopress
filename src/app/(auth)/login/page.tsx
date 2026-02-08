@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -58,23 +58,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden px-4">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted" />
-      <div className="absolute inset-0 bg-dots opacity-50" />
-      <div className="orb w-[400px] h-[400px] bg-primary/5 -top-32 -right-32" />
-      <div className="orb w-[300px] h-[300px] bg-secondary/5 -bottom-24 -left-24" />
-
-      <div className="relative w-full max-w-md animate-scale-in">
-        <Card className="shadow-layered-lg border-border/60">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-gray-100 px-4">
+      <div className="w-full max-w-md">
+        <Card className="border-border">
           <CardHeader className="text-center pb-2">
-            <Link href="/" className="inline-flex items-center justify-center gap-2.5 mb-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-orange-700 shadow-[0_2px_8px_rgba(242,85,51,0.3)]">
-                <Sparkles className="h-5 w-5 text-white" />
+            <Link href="/" className="inline-flex items-center justify-center gap-2 mb-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                <span className="text-base font-bold text-white">A</span>
               </div>
-              <span className="text-2xl font-bold tracking-tight">AIOプレス</span>
+              <span className="text-2xl font-semibold tracking-tight">AIOプレス</span>
             </Link>
-            <CardTitle className="text-2xl font-bold">おかえりなさい</CardTitle>
+            <CardTitle className="text-xl font-semibold">おかえりなさい</CardTitle>
             <CardDescription className="mt-1">
               アカウントにログインしてください
             </CardDescription>
@@ -115,7 +109,7 @@ export default function LoginPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full h-11 font-semibold"
+                className="w-full h-11 font-medium"
                 disabled={isSubmitting || loading}
               >
                 {isSubmitting ? "ログイン中..." : "ログイン"}
@@ -124,7 +118,7 @@ export default function LoginPage() {
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/60" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-3 text-muted-foreground">または</span>

@@ -124,7 +124,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
-      <div className="page-header animate-fade-up">
+      <div>
         <h1 className="heading-page text-foreground">設定</h1>
         <p className="text-sm text-muted-foreground mt-2">
           アカウント設定とプロフィールを管理します
@@ -132,7 +132,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card className="shadow-layered animate-fade-up delay-100">
+        <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold">プロフィール</CardTitle>
             <CardDescription>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-layered animate-fade-up delay-200">
+        <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold">アカウント情報</CardTitle>
             <CardDescription>
@@ -237,7 +237,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-layered animate-fade-up delay-300">
+        <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -349,7 +349,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-destructive/20 shadow-layered animate-fade-up delay-400">
+        <Card className="border-destructive/20">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold text-destructive">危険な操作</CardTitle>
             <CardDescription>
