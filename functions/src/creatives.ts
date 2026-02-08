@@ -5,7 +5,7 @@ import { VertexAI } from "@google-cloud/vertexai";
 const db = admin.firestore();
 const storage = admin.storage();
 
-const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT_ID || "";
+const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "aiopress";
 const LOCATION = process.env.GOOGLE_CLOUD_LOCATION || "asia-northeast1";
 
 const vertexAI = new VertexAI({
