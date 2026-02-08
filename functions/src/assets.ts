@@ -4,7 +4,6 @@ import { VertexAI } from "@google-cloud/vertexai";
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 
 const db = admin.firestore();
-const storage = admin.storage();
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "aiopress";
 const LOCATION = process.env.GOOGLE_CLOUD_LOCATION || "asia-northeast1";
@@ -36,9 +35,9 @@ export const onAssetUpload = functions
     const filePath = object.name;
     if (!filePath) return;
 
-    // brands/{brandId}/assets/{assetId}.{ext} の形式を想定
+    // brands/{brandId}/assets/{filename} の形式を想定
     const pathParts = filePath.split("/");
-    if (pathParts.length !== 3 || pathParts[0] !== "brands") {
+    if (pathParts.length !== 4 || pathParts[0] !== "brands" || pathParts[2] !== "assets") {
       return;
     }
 
@@ -69,13 +68,8 @@ export const onAssetUpload = functions
         status: "processing",
       });
 
-      // ファイルURLを取得
-      const bucket = storage.bucket(object.bucket);
-      const file = bucket.file(filePath);
-      const [signedUrl] = await file.getSignedUrl({
-        action: "read",
-        expires: "03-01-2500", // 長期間有効なURL
-      });
+      // GCS URIを構築（Vertex AIが直接読める形式）
+      const gcsUri = `gs://${object.bucket}/${filePath}`;
 
       // Vision AIで画像分析
       let visionAnalysis: {
@@ -91,7 +85,7 @@ export const onAssetUpload = functions
       if (object.contentType?.startsWith("image/")) {
         try {
           const [result] = await visionClient.annotateImage({
-            image: { source: { imageUri: signedUrl } },
+            image: { source: { imageUri: gcsUri } },
             features: [
               { type: "LABEL_DETECTION", maxResults: 10 },
               { type: "TEXT_DETECTION" },
@@ -118,7 +112,7 @@ export const onAssetUpload = functions
 
       // Gemini APIで詳細分析
       const model = vertexAI.getGenerativeModel({
-        model: "gemini-1.5-pro",
+        model: "gemini-2.0-flash",
       });
 
       const analysisPrompt = `
@@ -140,7 +134,7 @@ ${visionAnalysis.labels.length > 0 ? `検出されたラベル: ${visionAnalysis
       if (object.contentType?.startsWith("image/")) {
         parts.push({
           fileData: {
-            fileUri: signedUrl,
+            fileUri: gcsUri,
             mimeType: object.contentType,
           },
         });
