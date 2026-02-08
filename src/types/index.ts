@@ -207,3 +207,34 @@ export interface EpsonConnectSettings {
   printerName?: string;
   connectionStatus?: string;
 }
+
+// Creative Feedback
+export interface FeedbackMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Timestamp;
+  improvedContent?: string;
+  appliedAt?: Timestamp;
+}
+
+export interface CreativeFeedback {
+  id: string;
+  creativeId: string;
+  brandId: string;
+  userId: string;
+  messages: FeedbackMessage[];
+  status: "active" | "resolved";
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface SendCreativeFeedbackRequest {
+  creativeId: string;
+  feedbackText: string;
+}
+
+export interface ApplyCreativeImprovementRequest {
+  creativeId: string;
+  messageId: string;
+}

@@ -38,6 +38,9 @@ export async function verifyBrandMember(
   const brandDoc = await db.collection("brands").doc(brandId).get();
   if (brandDoc.exists && brandDoc.data()?.ownerId === uid) {
     // brandMembersドキュメントが欠落しているので自動修復
+    console.warn(
+      `[verifyBrandMember] Auto-repairing missing brandMembers doc for owner: brandId=${brandId}, uid=${uid}`
+    );
     const memberData = {
       brandId,
       userId: uid,

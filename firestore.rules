@@ -55,8 +55,16 @@ service cloud.firestore {
       allow write: if isBrandOwnerOrAdmin(brandId);
     }
 
-    // クリエイティブ（list操作ではexists()が使えないためget/listを分離）
+    // クリエイティブ(list操作ではexists()が使えないためget/listを分離)
     match /creatives/{creativeId} {
+      allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
+      allow list: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && isBrandMember(resource.data.brandId);
+    }
+
+    // クリエイティブフィードバック
+    match /creativeFeedbacks/{feedbackId} {
       allow get: if isAuthenticated() && isBrandMember(resource.data.brandId);
       allow list: if isAuthenticated();
       allow create: if isAuthenticated();
