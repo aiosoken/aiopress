@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, LogOut, Settings } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, LogOut, Settings, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
@@ -15,9 +16,38 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthContext } from "@/components/providers";
 
+const pageLabels: Record<string, string> = {
+  "/dashboard": "ダッシュボード",
+  "/brands": "ブランド",
+  "/brands/new": "新規作成",
+  "/assets": "資産",
+  "/design-system": "ブランドDNA",
+  "/creatives": "クリエイティブ生成",
+  "/analytics": "分析・レポート",
+  "/settings": "設定",
+};
+
+function getBreadcrumbs(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: { label: string; href: string }[] = [];
+
+  let currentPath = "";
+  for (const segment of segments) {
+    currentPath += `/${segment}`;
+    const label = pageLabels[currentPath];
+    if (label) {
+      crumbs.push({ label, href: currentPath });
+    }
+  }
+
+  return crumbs;
+}
+
 export function DashboardHeader() {
   const { toggleSidebar } = useSidebar();
   const { firebaseUser, logout } = useAuthContext();
+  const pathname = usePathname();
+  const breadcrumbs = getBreadcrumbs(pathname);
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -30,7 +60,7 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-lg px-4 md:px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -40,6 +70,22 @@ export function DashboardHeader() {
         <Menu className="h-5 w-5" />
         <span className="sr-only">メニューを開く</span>
       </Button>
+
+      {/* Breadcrumb */}
+      <nav className="hidden md:flex items-center gap-1 text-sm">
+        {breadcrumbs.map((crumb, i) => (
+          <div key={crumb.href} className="flex items-center gap-1">
+            {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />}
+            {i === breadcrumbs.length - 1 ? (
+              <span className="font-medium text-foreground">{crumb.label}</span>
+            ) : (
+              <Link href={crumb.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                {crumb.label}
+              </Link>
+            )}
+          </div>
+        ))}
+      </nav>
 
       <div className="flex-1" />
 

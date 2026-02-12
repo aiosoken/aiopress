@@ -161,10 +161,10 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      className={`gap-3 rounded-lg transition-colors ${
+                      className={`gap-3 rounded-lg transition-all duration-200 ${
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium sidebar-active-indicator shadow-sm"
+                          : "hover:bg-sidebar-accent/50 hover:translate-x-0.5"
                       }`}
                     >
                       <Link href={item.href}>

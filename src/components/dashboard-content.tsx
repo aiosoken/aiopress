@@ -75,6 +75,13 @@ export function DashboardContent() {
   const brandIds = useMemo(() => brands.map((b) => b.id), [brands]);
   const { stats, loading: statsLoading } = useDashboardStats(brandIds);
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "おはようございます";
+    if (hour < 17) return "こんにちは";
+    return "おつかれさまです";
+  }, []);
+
   const statCards = useMemo(
     () => [
       {
@@ -83,6 +90,7 @@ export function DashboardContent() {
         icon: Building2,
         border: "bg-gradient-card-blue",
         iconColor: "text-primary",
+        iconBg: "bg-primary/10",
       },
       {
         title: "資産数",
@@ -90,6 +98,7 @@ export function DashboardContent() {
         icon: FolderOpen,
         border: "bg-gradient-card-emerald",
         iconColor: "text-emerald-500",
+        iconBg: "bg-emerald-500/10",
       },
       {
         title: "クリエイティブ",
@@ -97,6 +106,7 @@ export function DashboardContent() {
         icon: Sparkles,
         border: "bg-gradient-card-purple",
         iconColor: "text-purple-500",
+        iconBg: "bg-purple-500/10",
       },
       {
         title: "ブランドDNA",
@@ -104,22 +114,23 @@ export function DashboardContent() {
         icon: Dna,
         border: "bg-gradient-card-orange",
         iconColor: "text-amber-500",
+        iconBg: "bg-amber-500/10",
       },
     ],
     [brandsLoading, brands.length, statsLoading, stats]
   );
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-page-enter">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="heading-page text-foreground">ダッシュボード</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {firebaseUser?.displayName || "ユーザー"}さん、おかえりなさい
+            {firebaseUser?.displayName || "ユーザー"}さん、{greeting}
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="shadow-sm">
           <Link href="/assets">
             <Upload className="mr-2 h-4 w-4" />
             資産をアップロード
@@ -128,16 +139,16 @@ export function DashboardContent() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-stagger">
         {statCards.map((stat) => (
-          <div key={stat.title} className={`stat-card ${stat.border}`}>
+          <div key={stat.title} className={`stat-card card-hover ${stat.border}`}>
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{stat.title}</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
+                <p className="text-3xl font-bold text-foreground mt-1 animate-count-up">{stat.value}</p>
               </div>
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-muted ${stat.iconColor}`}>
-                <stat.icon className="h-4 w-4" />
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.iconBg} ${stat.iconColor}`}>
+                <stat.icon className="h-5 w-5" />
               </div>
             </div>
           </div>
@@ -147,7 +158,7 @@ export function DashboardContent() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Brand List */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 card-hover">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base font-medium">ブランド一覧</CardTitle>
             <Button variant="ghost" size="sm" className="text-primary text-sm" asChild>
@@ -205,7 +216,7 @@ export function DashboardContent() {
         </Card>
 
         {/* Design System Progress */}
-        <Card>
+        <Card className="card-hover">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium">ブランドDNA進捗</CardTitle>
           </CardHeader>
@@ -252,26 +263,26 @@ export function DashboardContent() {
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Quick Actions */}
-        <Card>
+        <Card className="card-hover">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium">クイックアクション</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { href: "/assets", icon: Upload, label: "資産アップロード", color: "text-primary" },
-                { href: "/creatives", icon: Sparkles, label: "コンテンツ生成", color: "text-purple-500" },
-                { href: "/design-system", icon: Dna, label: "ブランドDNA", color: "text-emerald-500" },
-                { href: "/brands/new", icon: Plus, label: "新規ブランド", color: "text-blue-500" },
+                { href: "/assets", icon: Upload, label: "資産アップロード", color: "text-primary", bg: "bg-primary/10" },
+                { href: "/creatives", icon: Sparkles, label: "コンテンツ生成", color: "text-purple-500", bg: "bg-purple-500/10" },
+                { href: "/design-system", icon: Dna, label: "ブランドDNA", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                { href: "/brands/new", icon: Plus, label: "新規ブランド", color: "text-blue-500", bg: "bg-blue-500/10" },
               ].map((action) => (
                 <Button
                   key={action.href}
                   variant="outline"
-                  className="h-auto py-4 flex-col gap-2 bg-transparent hover:bg-muted/50 transition-colors"
+                  className="h-auto py-4 flex-col gap-2 bg-transparent hover:bg-muted/50 transition-all hover:shadow-sm hover:border-primary/20"
                   asChild
                 >
                   <Link href={action.href}>
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-muted ${action.color}`}>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.bg} ${action.color}`}>
                       <action.icon className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-medium">{action.label}</span>
@@ -283,7 +294,7 @@ export function DashboardContent() {
         </Card>
 
         {/* Recent Creatives */}
-        <Card>
+        <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="text-base font-medium">最近のクリエイティブ</CardTitle>
             <Button variant="ghost" size="sm" className="text-primary text-sm" asChild>

@@ -260,7 +260,7 @@ export default function DesignSystemPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-page-enter">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="heading-page text-foreground">ブランドDNA / デザインシステム</h1>

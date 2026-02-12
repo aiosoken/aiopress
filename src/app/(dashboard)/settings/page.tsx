@@ -123,7 +123,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-page-enter">
       <div>
         <h1 className="heading-page text-foreground">設定</h1>
         <p className="text-sm text-muted-foreground mt-2">
