@@ -205,6 +205,43 @@ export const applyCreativeImprovementFunction = httpsCallable<
   }
 >(functions, "applyCreativeImprovement");
 
+// AIエージェント実行
+export const runAgentFunction = httpsCallable<
+  { brandId: string; message: string; sessionId?: string },
+  {
+    success: boolean;
+    sessionId: string;
+    response: string;
+    toolsUsed: string[];
+    creativeIds?: string[];
+  }
+>(functions, "runAgent");
+
+// エージェントセッション一覧取得
+export const getAgentSessionsFunction = httpsCallable<
+  { brandId: string },
+  {
+    success: boolean;
+    sessions: {
+      id: string;
+      brandId: string;
+      title: string;
+      messageCount: number;
+      createdAt: any;
+      updatedAt: any;
+    }[];
+  }
+>(functions, "getAgentSessions");
+
+// エージェントセッション詳細取得
+export const getAgentSessionFunction = httpsCallable<
+  { sessionId: string },
+  {
+    success: boolean;
+    session: import("@/types").AgentSession;
+  }
+>(functions, "getAgentSession");
+
 // クリエイティブフィードバック取得
 export const getCreativeFeedbackFunction = httpsCallable<
   {

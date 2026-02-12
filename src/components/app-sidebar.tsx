@@ -12,6 +12,7 @@ import {
   Plus,
   ChevronDown,
   BarChart3,
+  Bot,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const menuItems = [
   { icon: FolderOpen, label: "資産", href: "/assets" },
   { icon: Dna, label: "ブランドDNA", href: "/design-system" },
   { icon: Sparkles, label: "クリエイティブ生成", href: "/creatives" },
+  { icon: Bot, label: "AIエージェント", href: "/agent" },
   { icon: BarChart3, label: "分析・レポート", href: "/analytics" },
   { icon: Settings, label: "設定", href: "/settings" },
 ];

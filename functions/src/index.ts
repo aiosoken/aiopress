@@ -33,3 +33,6 @@ export {
 
 // フィードバック関連関数
 export { sendCreativeFeedback, applyCreativeImprovement, getCreativeFeedback } from "./feedback";
+
+// AIエージェント関連関数
+export { runAgent, getAgentSessions, getAgentSession } from "./agent";

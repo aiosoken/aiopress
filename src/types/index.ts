@@ -238,3 +238,23 @@ export interface ApplyCreativeImprovementRequest {
   creativeId: string;
   messageId: string;
 }
+
+// AIエージェント
+export interface AgentMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  toolCalls?: { name: string; args: Record<string, unknown> }[];
+  toolResults?: { name: string; result: unknown }[];
+  timestamp: Timestamp;
+}
+
+export interface AgentSession {
+  id: string;
+  brandId: string;
+  userId: string;
+  title: string;
+  messages: AgentMessage[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}

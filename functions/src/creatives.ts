@@ -17,7 +17,7 @@ const vertexAI = new VertexAI({
 /**
  * ブランドDNA情報を含むシステム命令を構築
  */
-function buildBrandContext(brand: any, designSystem: any): string {
+export function buildBrandContext(brand: any, designSystem: any): string {
   const brandDNA = designSystem?.brandDNA || {};
   return `
 【ブランドDNA】
@@ -41,7 +41,7 @@ function buildBrandContext(brand: any, designSystem: any): string {
 /**
  * Brand Fit Scoreを計算（Gemini APIによる評価）
  */
-async function calculateBrandFitScore(
+export async function calculateBrandFitScore(
   content: string,
   brandContext: string,
   type: string
@@ -488,7 +488,7 @@ ${prompt}
 /**
  * Imagen API呼び出し（REST API経由）
  */
-async function callImagenAPI(
+export async function callImagenAPI(
   prompt: string,
   aspectRatio: string
 ): Promise<{ success: boolean; imageBase64?: string }> {
